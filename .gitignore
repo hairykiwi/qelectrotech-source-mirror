@@ -6,4 +6,5 @@
 doc/*
 !doc/QElectroTech.qch
 QElectroTech.tag
-!doc/doc-utils
+!doc/doc-utilsbuild_qt6/
+.DS_Store
