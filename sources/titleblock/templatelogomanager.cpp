@@ -214,10 +214,10 @@ QString TitleBlockTemplateLogoManager::confirmLogoName(const QString &initial_na
 			signal_mapper -> setMapping(replace_button, QDialogButtonBox::YesRole);
 			signal_mapper -> setMapping(rename_button,  QDialogButtonBox::NoRole);
 			signal_mapper -> setMapping(cancel_button,  QDialogButtonBox::RejectRole);
-			connect(replace_button, SIGNAL(clicked()), signal_mapper, SLOT(map()));
-			connect(rename_button,  SIGNAL(clicked()), signal_mapper, SLOT(map()));
-			connect(cancel_button,  SIGNAL(clicked()), signal_mapper, SLOT(map()));
-			connect(signal_mapper, SIGNAL(mapped(int)), rename_dialog, SLOT(done(int)));
+			connect(replace_button, &QPushButton::clicked, signal_mapper, qOverload<>(&QSignalMapper::map));
+			connect(rename_button,  &QPushButton::clicked, signal_mapper, qOverload<>(&QSignalMapper::map));
+			connect(cancel_button,  &QPushButton::clicked, signal_mapper, qOverload<>(&QSignalMapper::map));
+			connect(signal_mapper, &QSignalMapper::mappedInt, rename_dialog, &QDialog::done);
 		}
 		rd_label -> setText(
 			QString(tr(

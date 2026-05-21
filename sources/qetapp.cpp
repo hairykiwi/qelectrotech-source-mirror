@@ -119,8 +119,8 @@ QETApp::QETApp() :
 	initSplashScreen();
 	initSystemTray();
 
-	connect(&signal_map, SIGNAL(mapped(QWidget *)),
-		this, SLOT(invertMainWindowVisibility(QWidget *)));
+	connect(&signal_map, &QSignalMapper::mappedObject,
+		this, [this](QObject *obj){ invertMainWindowVisibility(qobject_cast<QWidget *>(obj)); });
 	qApp->setQuitOnLastWindowClosed(false);
 	connect(qApp, &QApplication::lastWindowClosed,
 		this, &QETApp::checkRemainingWindows);
@@ -2351,7 +2351,7 @@ template <class T> void QETApp::addWindowsListToMenu(
 		QAction *current_menu = menu -> addAction(window -> windowTitle());
 		current_menu -> setCheckable(true);
 		current_menu -> setChecked(window -> isVisible());
-		connect(current_menu, SIGNAL(triggered()), &signal_map, SLOT(map()));
+		connect(current_menu, &QAction::triggered, &signal_map, qOverload<>(&QSignalMapper::map));
 		signal_map.setMapping(current_menu, window);
 	}
 }
