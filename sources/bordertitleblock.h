@@ -184,7 +184,8 @@ class BorderTitleBlock : public QObject
 		void titleBlockTemplateRemoved(
 				const QString &,
 				const TitleBlockTemplate * = nullptr);
-		
+		void setAutoPageNum(const QString &);
+
 		// methods to set display options
 		void displayTitleBlock(bool);
 		void displayColumns(bool);

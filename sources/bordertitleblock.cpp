@@ -991,6 +991,15 @@ void BorderTitleBlock::setFolioData(
 }
 
 /**
+	@brief BorderTitleBlock::setAutoPageNum
+*/
+void BorderTitleBlock::setAutoPageNum(const QString &autoPageNum)
+{
+	btb_auto_page_num_ = autoPageNum;
+	emit needFolioData();
+}
+
+/**
 	@brief BorderTitleBlock::setPreviousFolioNum
 	@param previous the new value of the "previous-folio-num" field
 */
