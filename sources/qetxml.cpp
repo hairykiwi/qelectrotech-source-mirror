@@ -18,6 +18,7 @@
 #include "qetxml.h"
 
 #include "NameList/nameslist.h"
+#include "qetapp.h"
 
 #include <QDir>
 #include <QFont>
@@ -536,7 +537,7 @@ void QETXML::modelHeaderDataFromXml(
 		else if (role_ == Qt::FontRole)
 		{
 			QFont font;
-			font.fromString(text_);
+			font.fromString(QETApp::sanitizeFontString(text_));
 			data_ = font;
 		}
 		else if (role_ == Qt::TextAlignmentRole)

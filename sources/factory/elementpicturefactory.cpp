@@ -503,7 +503,7 @@ void ElementPictureFactory::parseText(const QDomElement &dom, QPainter &painter,
 		font_ = QETApp::diagramTextsFont(dom.attribute("size").toDouble());
 	}
 	else if (dom.hasAttribute("font")) {
-		font_.fromString(dom.attribute("font"));
+		font_.fromString(QETApp::sanitizeFontString(dom.attribute("font")));
 	}
 
 	QColor text_color(dom.attribute("color", "#000000"));

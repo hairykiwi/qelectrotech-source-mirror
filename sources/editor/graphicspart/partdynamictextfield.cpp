@@ -213,7 +213,7 @@ void PartDynamicTextField::fromXml(const QDomElement &dom_elmt) {
 
 	if (dom_elmt.hasAttribute("font")) {
 		QFont font_;
-		font_.fromString(dom_elmt.attribute("font"));
+		font_.fromString(QETApp::sanitizeFontString(dom_elmt.attribute("font")));
 		setFont(font_);
 	}
 	else if (dom_elmt.hasAttribute("font_size")) {

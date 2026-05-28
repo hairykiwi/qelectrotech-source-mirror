@@ -1285,9 +1285,8 @@ QFont QETApp::diagramTextsFont(qreal size)
 							  "Liberation Sans").toString();
 	qreal diagram_texts_size     = settings.value("diagramitemsize",
 							  9.0).toDouble();
-	auto diagram_texts_item_weight =
-			static_cast<QFont::Weight>(
-				settings.value("diagramitemweight", QFont::Normal).toInt());
+	const int dtw_ = settings.value("diagramitemweight", int(QFont::Normal)).toInt();
+	auto diagram_texts_item_weight = static_cast<QFont::Weight>(dtw_ < 1 ? int(QFont::Thin) : dtw_);
 	QString diagram_texts_item_style  = settings.value("diagramitemstyle",
 							   "Regular").toString();
 
@@ -1319,9 +1318,8 @@ QFont QETApp::diagramTextsItemFont(qreal size)
 							   "Liberation Sans").toString();
 	qreal diagram_texts_item_size     = settings.value("diagramitemsize",
 							   9.0).toDouble();
-	auto diagram_texts_item_weight =
-			static_cast<QFont::Weight>(
-				settings.value("diagramitemweight", QFont::Normal).toInt());
+	const int ditw_ = settings.value("diagramitemweight", int(QFont::Normal)).toInt();
+	auto diagram_texts_item_weight = static_cast<QFont::Weight>(ditw_ < 1 ? int(QFont::Thin) : ditw_);
 	QString diagram_texts_item_style  = settings.value("diagramitemstyle",
 							   "Regular").toString();
 
@@ -1350,9 +1348,9 @@ QFont QETApp::diagramTextsItemFont(qreal size)
 	//Font to use
 	QFont font_ = diagramTextsItemFont();
 	if (settings.contains("diagrameditor/dynamic_text_font")) {
-		font_.fromString(settings.value(
+		font_.fromString(sanitizeFontString(settings.value(
 					 "diagrameditor/dynamic_text_font"
-						).toString());
+						).toString()));
 	}
 	if (size > 0) {
 		font_.setPointSizeF(size);
@@ -1374,14 +1372,28 @@ QFont QETApp::indiTextsItemFont(qreal size)
 	//Font to use
 	QFont font_ = diagramTextsItemFont();
 	if (settings.contains("diagrameditor/independent_text_font")) {
-		font_.fromString(settings.value(
+		font_.fromString(sanitizeFontString(settings.value(
 					 "diagrameditor/independent_text_font"
-					 ).toString());
+					 ).toString()));
 	}
 	if (size > 0) {
 		font_.setPointSizeF(size);
 	}
 	return(font_);
+}
+
+// Qt5 serialised QFont::Thin as weight 0, which Qt6 rejects (valid range 1–1000).
+// Replace weight < 1 in the comma-separated font string with Qt6's Thin (100)
+// before calling fromString() so the warning is suppressed at source.
+QString QETApp::sanitizeFontString(const QString &s)
+{
+	QStringList f = s.split(QLatin1Char(','));
+	if (f.size() >= 5) {
+		bool ok;
+		if (f.at(4).toInt(&ok) < 1 && ok)
+			f[4] = QString::number(int(QFont::Thin));
+	}
+	return f.join(QLatin1Char(','));
 }
 
 /**

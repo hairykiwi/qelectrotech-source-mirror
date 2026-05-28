@@ -290,7 +290,7 @@ void ProjectDBModel::fromXml(const QDomElement &element)
 	//Index 0,0
 	auto index_00 = element.firstChildElement("index00");
 	QFont font_;
-	font_.fromString(index_00.attribute("font"));
+	font_.fromString(QETApp::sanitizeFontString(index_00.attribute("font")));
 	m_index_0_0_data.insert(Qt::FontRole, font_);
 	auto me = QMetaEnum::fromType<Qt::Alignment>();
 	m_index_0_0_data.insert(Qt::TextAlignmentRole, me.keyToValue(index_00.attribute("alignment").toStdString().data()));

@@ -64,7 +64,7 @@ void IndependentTextItem::fromXml(const QDomElement &e) {
 	if (e.hasAttribute("font"))
 	{
 		QFont font;
-		font.fromString(e.attribute("font"));
+		font.fromString(QETApp::sanitizeFontString(e.attribute("font")));
 		setFont(font);
 	}
 }

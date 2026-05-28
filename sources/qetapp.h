@@ -167,6 +167,7 @@ class QETApp : public QObject
 		static QFont diagramTextsItemFont(qreal = -1.0);
 		static QFont dynamicTextsItemFont(qreal = -1.0);
 		static QFont indiTextsItemFont (qreal = -1.0);
+		static QString sanitizeFontString(const QString &);
 		static QETDiagramEditor *diagramEditorForFile(const QString &);
 		static QETDiagramEditor *diagramEditorAncestorOf (const QWidget *child);
 		static QList<QETDiagramEditor *> diagramEditors();

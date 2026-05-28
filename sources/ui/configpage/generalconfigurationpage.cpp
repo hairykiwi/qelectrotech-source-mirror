@@ -95,7 +95,7 @@ GeneralConfigurationPage::GeneralConfigurationPage(QWidget *parent) :
 	if (settings.contains("diagrameditor/dynamic_text_font"))
 	{
 		QFont font;
-		font.fromString(settings.value("diagrameditor/dynamic_text_font").toString());
+		font.fromString(QETApp::sanitizeFontString(settings.value("diagrameditor/dynamic_text_font").toString()));
 
 		QString fontInfos = font.family() + " " +
 				QString::number(font.pointSize()) + " (" +
@@ -108,7 +108,7 @@ GeneralConfigurationPage::GeneralConfigurationPage(QWidget *parent) :
 	if (settings.contains("diagrameditor/independent_text_font"))
 	{
 		QFont font;
-		font.fromString(settings.value("diagrameditor/independent_text_font").toString());
+		font.fromString(QETApp::sanitizeFontString(settings.value("diagrameditor/independent_text_font").toString()));
 
 		QString fontInfos = font.family() + " " +
 							QString::number(font.pointSize()) + " (" +
