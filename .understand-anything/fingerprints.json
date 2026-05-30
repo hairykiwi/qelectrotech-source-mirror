@@ -1,7 +1,7 @@
 {
   "version": "1.0.0",
-  "gitCommitHash": "e384e3ec1d329c78a82ac61291c69fd8329ac7e5",
-  "generatedAt": "2026-05-25T23:36:14.949Z",
+  "gitCommitHash": "8fd5431be006645750703bc70430d45027636e34",
+  "generatedAt": "2026-05-30T12:19:08.547Z",
   "files": {
     ".clang-format": {
       "filePath": ".clang-format",
@@ -61,6 +61,56 @@
       "imports": [],
       "exports": [],
       "totalLines": 49,
+      "hasStructuralAnalysis": false
+    },
+    ".understand-anything/config.json": {
+      "filePath": ".understand-anything/config.json",
+      "contentHash": "fa85454c0bc9c54a92df89e21d38a78ff7b6ff93950d481f85be1296a68bea76",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 2,
+      "hasStructuralAnalysis": true
+    },
+    ".understand-anything/fingerprints.json": {
+      "filePath": ".understand-anything/fingerprints.json",
+      "contentHash": "6d0b1df895dda4ab769544e62a4bb1156c7f4b533dc766b2b9d848839364a118",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 61924,
+      "hasStructuralAnalysis": true
+    },
+    ".understand-anything/knowledge-graph.json": {
+      "filePath": ".understand-anything/knowledge-graph.json",
+      "contentHash": "bb110416ec627d90737ae27894be350326697996a88413dfe7dfb3df80835024",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 1,
+      "hasStructuralAnalysis": true
+    },
+    ".understand-anything/meta.json": {
+      "filePath": ".understand-anything/meta.json",
+      "contentHash": "f471cd73e12b8f1e9d30aeb4dee9407c01bce086af88ad073bb38163c930df2f",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 9,
+      "hasStructuralAnalysis": true
+    },
+    ".understand-anything/tmp/changed-files.txt": {
+      "filePath": ".understand-anything/tmp/changed-files.txt",
+      "contentHash": "33cca60249edc243c4c10db5555393b0aad967889b4a8b0be4b75d97dc2e1280",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 16,
       "hasStructuralAnalysis": false
     },
     "build-aux/flatpak/org.qelectrotech.QElectroTech.json": {
@@ -3154,7 +3204,7 @@
     },
     "sources/autoNum/ui/autonumberingdockwidget.cpp": {
       "filePath": "sources/autoNum/ui/autonumberingdockwidget.cpp",
-      "contentHash": "42bacc6d49da909f45f37667130cc47e14bf2405e0cd5f42451968e46300c1ee",
+      "contentHash": "34e1f0316bba03fab08ccda36535200cf87b394128c5884ec2c9e0be13cf695c",
       "functions": [
         {
           "name": "AutoNumberingDockWidget",
@@ -3192,7 +3242,7 @@
           ],
           "returnType": "void",
           "exported": true,
-          "lineCount": 80
+          "lineCount": 78
         },
         {
           "name": "setContext",
@@ -3335,7 +3385,7 @@
         "on_m_folio_cb_activated",
         "on_m_configure_pb_clicked"
       ],
-      "totalLines": 340,
+      "totalLines": 338,
       "hasStructuralAnalysis": true
     },
     "sources/autoNum/ui/autonumberingdockwidget.h": {
@@ -4328,7 +4378,7 @@
     },
     "sources/bordertitleblock.cpp": {
       "filePath": "sources/bordertitleblock.cpp",
-      "contentHash": "bd0273b51c146384ef5f33fcf88203ad53ebdf9422caf842ac0193ad15386476",
+      "contentHash": "91024cdd1a0f505aba789be4bd1d75f2991fce31bb2356d01b72c97b7fcb577d",
       "functions": [
         {
           "name": "BorderTitleBlock",
@@ -4677,6 +4727,15 @@
           "lineCount": 25
         },
         {
+          "name": "setAutoPageNum",
+          "params": [
+            "autoPageNum"
+          ],
+          "returnType": "void",
+          "exported": true,
+          "lineCount": 5
+        },
+        {
           "name": "setPreviousFolioNum",
           "params": [
             "previous"
@@ -4812,20 +4871,21 @@
         "updateDiagramContextForTitleBlock",
         "incrementLetters",
         "setFolioData",
+        "setAutoPageNum",
         "setPreviousFolioNum",
         "setNextFolioNum"
       ],
-      "totalLines": 1016,
+      "totalLines": 1025,
       "hasStructuralAnalysis": true
     },
     "sources/bordertitleblock.h": {
       "filePath": "sources/bordertitleblock.h",
-      "contentHash": "665d6c08df5b1f2a81547b41adeadbf13392c133c4b59d326b99dcb2878b4cfc",
+      "contentHash": "4dae93f013c5617231d2974e62160a3b4aac25af6259a0ce8a16251ce04990d5",
       "functions": [],
       "classes": [],
       "imports": [],
       "exports": [],
-      "totalLines": 287,
+      "totalLines": 288,
       "hasStructuralAnalysis": true
     },
     "sources/conductorautonumerotation.cpp": {
@@ -9621,7 +9681,7 @@
     },
     "sources/diagramview.cpp": {
       "filePath": "sources/diagramview.cpp",
-      "contentHash": "166cf1799df2ce63a4132aa2b244f0dc13b564a2171485e25dbc31179514755d",
+      "contentHash": "7b563abb6c815bdd8886541eab8577528de1c477bdb4487b6a84b77dea1170bd",
       "functions": [
         {
           "name": "DiagramView",
@@ -14305,7 +14365,7 @@
     },
     "sources/editor/graphicspart/partdynamictextfield.cpp": {
       "filePath": "sources/editor/graphicspart/partdynamictextfield.cpp",
-      "contentHash": "985611cb0bb0cc8637fc0bff6b41b28886e4688ec1d4cd5912aa0575c0a2ae7a",
+      "contentHash": "ae6170ef705fbc09845f46b8c0fd72ecbc989a6f3df38fdfbe64cb6af472a1f2",
       "functions": [
         {
           "name": "PartDynamicTextField",
@@ -16339,7 +16399,7 @@
     },
     "sources/editor/graphicspart/parttext.cpp": {
       "filePath": "sources/editor/graphicspart/parttext.cpp",
-      "contentHash": "92951208027cf276105805623743b72cd86b533aed64987a8c03fa8450049b03",
+      "contentHash": "d5348ad03dd200e65c511426843daccace8a3ef71ad8884ff9bc6273bc5aaed2",
       "functions": [
         {
           "name": "PartText",
@@ -24328,7 +24388,7 @@
     },
     "sources/factory/elementpicturefactory.cpp": {
       "filePath": "sources/factory/elementpicturefactory.cpp",
-      "contentHash": "d8c2d6e88681c285e3fbf643111a1c6d8244490013a935f06087801854837b8e",
+      "contentHash": "8771dc411d8f79668797cad15d00e4af014d791fbf6fa704e7eeb06b99e926ef",
       "functions": [
         {
           "name": "getPictures",
@@ -24837,7 +24897,7 @@
     },
     "sources/factory/ui/addtabledialog.cpp": {
       "filePath": "sources/factory/ui/addtabledialog.cpp",
-      "contentHash": "f3d23bb4833ccda4738d7e460457070ad4aa9ff018e4e2e76738b0f038bf84f7",
+      "contentHash": "3afd0ef9a7326ec492b55223f41f4f51a7c06d63df05e1c9004356f8de43006a",
       "functions": [
         {
           "name": "AddTableDialog",
@@ -24982,6 +25042,12 @@
           ]
         },
         {
+          "source": "../../qetapp.h",
+          "specifiers": [
+            "../../qetapp.h"
+          ]
+        },
+        {
           "source": "../../ui/marginseditdialog.h",
           "specifiers": [
             "../../ui/marginseditdialog.h"
@@ -25026,7 +25092,7 @@
         "loadConfig",
         "fillSavedQuery"
       ],
-      "totalLines": 311,
+      "totalLines": 312,
       "hasStructuralAnalysis": true
     },
     "sources/factory/ui/addtabledialog.h": {
@@ -28902,7 +28968,7 @@
     },
     "sources/qetapp.cpp": {
       "filePath": "sources/qetapp.cpp",
-      "contentHash": "a68f9763edfd0418ad14fda59d0eb4159fb8dd8556775cb4fc623b890f6268e3",
+      "contentHash": "9aa1b47cf2ffe7d6d8e9219b30657cd15d7ab3a57b7c86d224bc8e479cfdfc98",
       "functions": [
         {
           "name": "QETApp",
@@ -29196,7 +29262,7 @@
           ],
           "returnType": "QFont",
           "exported": true,
-          "lineCount": 28
+          "lineCount": 27
         },
         {
           "name": "diagramTextsItemFont",
@@ -29205,7 +29271,7 @@
           ],
           "returnType": "QFont",
           "exported": true,
-          "lineCount": 28
+          "lineCount": 27
         },
         {
           "name": "dynamicTextsItemFont",
@@ -29224,6 +29290,15 @@
           "returnType": "QFont",
           "exported": true,
           "lineCount": 15
+        },
+        {
+          "name": "sanitizeFontString",
+          "params": [
+            "s"
+          ],
+          "returnType": "QString",
+          "exported": true,
+          "lineCount": 10
         },
         {
           "name": "diagramEditors",
@@ -29760,6 +29835,7 @@
         "diagramTextsItemFont",
         "dynamicTextsItemFont",
         "indiTextsItemFont",
+        "sanitizeFontString",
         "diagramEditors",
         "elementEditors",
         "titleBlockTemplateEditors",
@@ -29801,17 +29877,17 @@
         "unregisterProject",
         "projectId"
       ],
-      "totalLines": 2759,
+      "totalLines": 2771,
       "hasStructuralAnalysis": true
     },
     "sources/qetapp.h": {
       "filePath": "sources/qetapp.h",
-      "contentHash": "709afae13acd977c2459b8aa233a42d1cf25f0add43de82a270aa6b79b0f8e61",
+      "contentHash": "029ce5a7e73ea1eba7127146b3a4f9133e1e4715ab23f50e35ee4ef977df7a41",
       "functions": [],
       "classes": [],
       "imports": [],
       "exports": [],
-      "totalLines": 302,
+      "totalLines": 303,
       "hasStructuralAnalysis": true
     },
     "sources/qetarguments.cpp": {
@@ -32662,7 +32738,7 @@
     },
     "sources/qetgraphicsitem/dynamicelementtextitem.cpp": {
       "filePath": "sources/qetgraphicsitem/dynamicelementtextitem.cpp",
-      "contentHash": "034786e89b2615a52599ed4225629eb8085e15a6d02c75e7cf96c3b4a87a4f75",
+      "contentHash": "8611acd4ad9ebe77b612b2de5ab79c2d3ab71ccd1341a96ee18f863ea060ef14",
       "functions": [
         {
           "name": "DynamicElementTextItem",
@@ -34289,7 +34365,7 @@
     },
     "sources/qetgraphicsitem/independenttextitem.cpp": {
       "filePath": "sources/qetgraphicsitem/independenttextitem.cpp",
-      "contentHash": "97ea507992fb20329c67f26f047deb1c32a75fd56d322ba72fb81c68d14bed6e",
+      "contentHash": "723a9d83d9fe34d373fb3ba1dec8b84744b9d0b472bfa5f78926c81d1caefc39",
       "functions": [
         {
           "name": "IndependentTextItem",
@@ -35911,7 +35987,7 @@
     },
     "sources/qetgraphicsitem/ViewItem/projectdbmodel.cpp": {
       "filePath": "sources/qetgraphicsitem/ViewItem/projectdbmodel.cpp",
-      "contentHash": "4f6d9b81122222b5d8fefaa71361b0be49bee89d9332d61b12b2ab23712978e2",
+      "contentHash": "0ed6d36cf736f97f22264307c6a584d99efbf0492e424e3cbf404cbec777d878",
       "functions": [
         {
           "name": "ProjectDBModel",
@@ -39283,7 +39359,7 @@
     },
     "sources/qetxml.cpp": {
       "filePath": "sources/qetxml.cpp",
-      "contentHash": "9bf769fe6ce3225bf67d75da3521295a6c7e92c72f0888fa8ebec275b3736983",
+      "contentHash": "2227f38b0744d2fab70235560be957c2dbd182a83fcad18541f94f33e2a54e8f",
       "functions": [
         {
           "name": "penToXml",
@@ -39764,6 +39840,12 @@
           ]
         },
         {
+          "source": "qetapp.h",
+          "specifiers": [
+            "qetapp.h"
+          ]
+        },
+        {
           "source": "QDir",
           "specifiers": [
             "QDir"
@@ -39835,7 +39917,7 @@
         "alignmentToAttribute",
         "alignmentFromAttribute"
       ],
-      "totalLines": 1039,
+      "totalLines": 1040,
       "hasStructuralAnalysis": true
     },
     "sources/qetxml.h": {
@@ -54087,7 +54169,7 @@
     },
     "sources/ui/configpage/generalconfigurationpage.cpp": {
       "filePath": "sources/ui/configpage/generalconfigurationpage.cpp",
-      "contentHash": "be7e7fc776f791a17e60e0ca93d7f65ab3573edfd8cf9e4d38ca0b9ddf496e37",
+      "contentHash": "b4487f2ab521c32f254825a1a2e9ef410761fc7950d8270ec82d9f6ce165ff6f",
       "functions": [
         {
           "name": "GeneralConfigurationPage",
