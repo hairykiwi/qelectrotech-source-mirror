@@ -707,6 +707,8 @@ set(QET_SRC_FILES
   ${QET_DIR}/sources/undocommand/itemmodelcommand.h
   ${QET_DIR}/sources/undocommand/linkelementcommand.cpp
   ${QET_DIR}/sources/undocommand/linkelementcommand.h
+  ${QET_DIR}/sources/undocommand/mirrorflipselectioncommand.cpp
+  ${QET_DIR}/sources/undocommand/mirrorflipselectioncommand.h
   ${QET_DIR}/sources/undocommand/rotateselectioncommand.cpp
   ${QET_DIR}/sources/undocommand/rotateselectioncommand.h
   ${QET_DIR}/sources/undocommand/rotatetextscommand.cpp
