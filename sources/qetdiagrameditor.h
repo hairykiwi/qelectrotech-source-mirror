@@ -212,6 +212,8 @@ class QETDiagramEditor : public QETMainWindow
 		*m_edit_selection,		///< To edit selected item
 		*m_delete_selection,		///< Delete selection
 		*m_rotate_selection,		///< Rotate selected elements and text items by 90 degrees
+		*m_mirror_selection,		///< Mirror (horizontal) the selected elements
+		*m_flip_selection,		///< Flip (vertical) the selected elements
 		*m_rotate_texts,		///< Direct selected text items to a specific angle
 		*m_find_element,		///< Find the selected element in the panel
 		*m_group_selected_texts = nullptr,

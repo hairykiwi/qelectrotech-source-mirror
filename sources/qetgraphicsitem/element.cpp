@@ -771,6 +771,10 @@ bool Element::fromXml(QDomElement &e,
 	}
 	setRotation(90*read_ori);
 
+		//folio-level mirror/flip (absent attribute == false, for pre-feature files)
+	m_mirror = e.attribute(QStringLiteral("mirror"), QStringLiteral("false")) == QLatin1String("true");
+	m_flip   = e.attribute(QStringLiteral("flip"),   QStringLiteral("false")) == QLatin1String("true");
+
 		//Before loading the dynamic text field,
 		//we remove the dynamic text field created from the description of this element, to avoid doubles.
 	for(DynamicElementTextItem *deti : m_dynamic_text_list)
@@ -835,6 +839,9 @@ bool Element::fromXml(QDomElement &e,
 	for(DynamicElementTextItem *deti : m_dynamic_text_list)
 		deti->m_block_alignment = false;
 
+		//Apply the folio-level reflection now that texts/groups exist
+	applyMirrorFlip();
+
 	m_state = QET::GIOK;
 	return(true);
 }
@@ -884,6 +891,12 @@ QDomElement Element::toXml(
 	element.setAttribute(QStringLiteral("y"), QString::number(pos().y()));
 	element.setAttribute(QStringLiteral("z"), QString::number(this->zValue()));
 	element.setAttribute(QStringLiteral("orientation"), QString::number(orientation()));
+
+		//folio-level mirror/flip (omit when false to keep pre-feature files byte-identical)
+	if (m_mirror)
+		element.setAttribute(QStringLiteral("mirror"), QStringLiteral("true"));
+	if (m_flip)
+		element.setAttribute(QStringLiteral("flip"), QStringLiteral("true"));
 
 	/* get the first id to use for the bounds of this element
 	 * recupere le premier id a utiliser pour les bornes de cet element */
@@ -997,6 +1010,68 @@ QDomElement Element::toXml(
 	element.appendChild(texts_group);
 
 	return(element);
+}
+
+/**
+	@brief Element::setMirror
+	Enable/disable the folio-level horizontal mirror and reapply the transform.
+*/
+void Element::setMirror(bool mirror)
+{
+	if (m_mirror == mirror)
+		return;
+	m_mirror = mirror;
+	applyMirrorFlip();
+}
+
+/**
+	@brief Element::setFlip
+	Enable/disable the folio-level vertical flip and reapply the transform.
+*/
+void Element::setFlip(bool flip)
+{
+	if (m_flip == flip)
+		return;
+	m_flip = flip;
+	applyMirrorFlip();
+}
+
+/**
+	@brief Element::applyMirrorFlip
+	Reflect the whole element geometry (symbol picture + child terminals) about
+	the element origin, according to m_mirror (horizontal) / m_flip (vertical).
+	All child items inherit this transform, so terminals move with the symbol.
+	The texts must stay readable: reflecting each text (or text group) about its
+	own bounding-rect centre leaves its footprint unchanged, so the element
+	reflection above performs the true positional mirror while the local
+	reflection cancels the glyph flip. State is fully derived from the flags, so
+	calling this is idempotent and safe on load, undo/redo and toggling.
+*/
+void Element::applyMirrorFlip()
+{
+	const qreal sx = m_mirror ? -1 : 1;
+	const qreal sy = m_flip   ? -1 : 1;
+
+	QTransform t;
+	t.scale(sx, sy);
+	setTransform(t);
+
+	auto compensate = [sx, sy](QGraphicsItem *item) {
+		const QPointF c = item->boundingRect().center();
+		QTransform ct;
+		ct.translate(c.x(), c.y());
+		ct.scale(sx, sy);
+		ct.translate(-c.x(), -c.y());
+		item->setTransform(ct);
+	};
+
+		//Ungrouped texts are compensated directly; grouped texts are compensated
+		//through their group (compensating both would double-reflect them).
+	for (DynamicElementTextItem *deti : m_dynamic_text_list)
+		if (!deti->parentGroup())
+			compensate(deti);
+	for (ElementTextItemGroup *group : m_texts_group)
+		compensate(group);
 }
 
 /**

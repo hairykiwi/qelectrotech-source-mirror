@@ -39,6 +39,7 @@
 #include "ui/diagrampropertieseditordockwidget.h"
 #include "ui/dialogwaiting.h"
 #include "undocommand/addelementtextcommand.h"
+#include "undocommand/mirrorflipselectioncommand.h"
 #include "undocommand/rotateselectioncommand.h"
 #include "undocommand/rotatetextscommand.h"
 #include "diagram.h"
@@ -604,6 +605,8 @@ void QETDiagramEditor::setUpActions()
 		//Selections Actions (related to a selected item)
 	m_delete_selection     = m_selection_actions_group.addAction( QET::Icons::EditDelete,        tr("Supprimer")                 );
 	m_rotate_selection     = m_selection_actions_group.addAction( QET::Icons::TransformRotate,   tr("Pivoter")                   );
+	m_mirror_selection     = m_selection_actions_group.addAction( QET::Icons::Mirror,            tr("Mirror")                    );
+	m_flip_selection       = m_selection_actions_group.addAction( QET::Icons::Flip,              tr("Flip")                      );
 	m_rotate_texts         = m_selection_actions_group.addAction( QET::Icons::ObjectRotateRight, tr("Orienter les textes")       );
 	m_find_element         = m_selection_actions_group.addAction( QET::Icons::ZoomDraw,          tr("Retrouver dans le panel")   );
 	m_edit_selection       = m_selection_actions_group.addAction( QET::Icons::ElementEdit,       tr("Éditer l'item sélectionné") );
@@ -616,11 +619,15 @@ void QETDiagramEditor::setUpActions()
 
 	m_delete_selection->setStatusTip( tr("Enlève les éléments sélectionnés du folio", "status bar tip"));
 	m_rotate_selection->setStatusTip( tr("Pivote les éléments et textes sélectionnés", "status bar tip"));
+	m_mirror_selection->setStatusTip( tr("Reflète horizontalement les éléments sélectionnés", "status bar tip"));
+	m_flip_selection  ->setStatusTip( tr("Reflète verticalement les éléments sélectionnés", "status bar tip"));
 	m_rotate_texts    ->setStatusTip( tr("Pivote les textes sélectionnés à un angle précis", "status bar tip"));
 	m_find_element    ->setStatusTip( tr("Retrouve l'élément sélectionné dans le panel", "status bar tip"));
 
 	m_delete_selection    ->setData("delete_selection");
 	m_rotate_selection    ->setData("rotate_selection");
+	m_mirror_selection    ->setData("mirror_selection");
+	m_flip_selection      ->setData("flip_selection");
 	m_rotate_texts        ->setData("rotate_selected_text");
 	m_find_element        ->setData("find_selected_element");
 	m_edit_selection      ->setData("edit_selected_element");
@@ -755,6 +762,8 @@ void QETDiagramEditor::setUpToolBar()
 	main_tool_bar -> addSeparator();
 	main_tool_bar -> addAction(m_delete_selection);
 	main_tool_bar -> addAction(m_rotate_selection);
+	main_tool_bar -> addAction(m_mirror_selection);
+	main_tool_bar -> addAction(m_flip_selection);
 
 	// Modes selection / visualisation et zoom
 	view_tool_bar -> addAction(m_mode_selection);
@@ -1509,6 +1518,22 @@ void QETDiagramEditor::selectionGroupTriggered(QAction *action)
 		if(c->isValid())
 			diagram->undoStack().push(c);
 	}
+	else if (value == "mirror_selection")
+	{
+		MirrorFlipSelectionCommand *c = new MirrorFlipSelectionCommand(diagram, MirrorFlipSelectionCommand::Mirror);
+		if(c->isValid())
+			diagram->undoStack().push(c);
+		else
+			delete c;
+	}
+	else if (value == "flip_selection")
+	{
+		MirrorFlipSelectionCommand *c = new MirrorFlipSelectionCommand(diagram, MirrorFlipSelectionCommand::Flip);
+		if(c->isValid())
+			diagram->undoStack().push(c);
+		else
+			delete c;
+	}
 	else if (value == "rotate_selected_text")
 		diagram->undoStack().push(new RotateTextsCommand(diagram));
 	else if (value == "find_selected_element" && currentElement())
@@ -1642,6 +1667,8 @@ void QETDiagramEditor::slot_updateComplexActions()
 			    << m_copy
 			    << m_delete_selection
 			    << m_rotate_selection
+			    << m_mirror_selection
+			    << m_flip_selection
 			    << m_edit_selection
 			    << m_group_selected_texts;
 		for(QAction *action : action_list)
@@ -1670,6 +1697,9 @@ void QETDiagramEditor::slot_updateComplexActions()
 	m_copy             -> setEnabled(copiable_items);
 	m_delete_selection -> setEnabled(!ro && deletable_items);
 	m_rotate_selection -> setEnabled(!ro && diagram_->canRotateSelection());
+		//Mirror/Flip act on selected elements only
+	m_mirror_selection -> setEnabled(!ro && selected_elements_count);
+	m_flip_selection   -> setEnabled(!ro && selected_elements_count);
 
 		//Action that need selected texts or texts group
 	QList<DiagramTextItem *> texts = DiagramContent(diagram_).selectedTexts();

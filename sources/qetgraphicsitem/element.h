@@ -154,6 +154,15 @@ class Element : public QetGraphicsItem
 		QUuid uuid() const;
 		int orientation() const;
 
+			//METHODS related to folio-level mirror/flip
+		bool isMirrored() const {return m_mirror;}
+		bool isFlipped() const {return m_flip;}
+		void setMirror(bool mirror);
+		void setFlip(bool flip);
+			/// (Re)apply the reflection transform from m_mirror/m_flip to this
+			/// element and the readable-text compensation to its child texts.
+		void applyMirrorFlip();
+
 			//METHODS related to texts
 		void addDynamicTextItem(DynamicElementTextItem *deti = nullptr);
 		void removeDynamicTextItem(DynamicElementTextItem *deti);
@@ -234,6 +243,8 @@ class Element : public QetGraphicsItem
 		autonum::sequentialNumbers m_autoNum_seq;
 		bool m_freeze_label = false;
 		QString m_F_str;
+		bool m_mirror = false;
+		bool m_flip = false;
 
 		ElementsLocation m_location;
 		QList <Terminal *> m_terminals;
