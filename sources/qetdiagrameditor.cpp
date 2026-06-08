@@ -616,6 +616,8 @@ void QETDiagramEditor::setUpActions()
 
 	m_delete_selection->setShortcut(Qt::Key_Delete);
 	m_rotate_selection->setShortcut(Qt::Key_Space);
+	m_mirror_selection->setShortcut(Qt::Key_M);
+	m_flip_selection  ->setShortcut(Qt::Key_F);
 	m_rotate_texts    ->setShortcut(Qt::CTRL | Qt::Key_Space);
 	m_edit_selection  ->setShortcut(Qt::CTRL | Qt::Key_E);
 
