@@ -1081,6 +1081,12 @@ void Element::applyMirrorFlip()
 			compensate(deti);
 	for (ElementTextItemGroup *group : m_texts_group)
 		compensate(group);
+
+		//Re-route conductors: Terminal::orientation() / dockConductor() now
+		//reflect the mirror/flip state, and updatePath() re-reads them fresh.
+	for (Terminal *t : terminals())
+		for (Conductor *c : t->conductors())
+			c->updatePath();
 }
 
 /**

@@ -107,7 +107,8 @@ Qet::Orientation Terminal::orientation() const
 		// orientations actuelle et par defaut de l'element
 		// current and default element orientations
 		int ori_cur = elt -> orientation();
-	if (ori_cur == 0) return(d->m_orientation);
+		Qet::Orientation result;
+		if (ori_cur == 0) result = d->m_orientation;
 		else {
 			// calcul l'angle de rotation implique par l'orientation de l'element parent
 			// angle de rotation de la borne sur la scene, divise par 90
@@ -115,8 +116,20 @@ Qet::Orientation Terminal::orientation() const
 			// element angle of rotation of the terminal on the scene, divided by 90
 			int angle = ori_cur + d->m_orientation;
 			while (angle >= 4) angle -= 4;
-			return((Qet::Orientation)angle);
+			result = (Qet::Orientation)angle;
 		}
+
+			// the folio-level mirror/flip reflects the terminal position but not
+			// the rotation, so swap the affected sides here for conductor docking
+		if (elt->isMirrored()) {
+			if (result == Qet::East)  result = Qet::West;
+			else if (result == Qet::West)  result = Qet::East;
+		}
+		if (elt->isFlipped()) {
+			if (result == Qet::North) result = Qet::South;
+			else if (result == Qet::South) result = Qet::North;
+		}
+		return result;
 	} else return(d->m_orientation);
 }
 
