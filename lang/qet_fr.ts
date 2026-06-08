@@ -7116,12 +7116,12 @@ Déponter et/ou supprimer les niveaux des bornes concerné afin de pouvoir les s
     <message>
         <location filename="../sources/editor/ui/qetelementeditor.ui" line="514"/>
         <source>Mirror</source>
-        <translation></translation>
+        <translation>Miroir</translation>
     </message>
     <message>
         <location filename="../sources/editor/ui/qetelementeditor.ui" line="523"/>
         <source>Flip</source>
-        <translation></translation>
+        <translation>Retourner</translation>
     </message>
     <message>
         <location filename="../sources/editor/ui/qetelementeditor.ui" line="532"/>
