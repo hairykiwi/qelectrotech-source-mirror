@@ -38,6 +38,7 @@
 #include "qgraphicsitemutility.h"
 
 #include <QDomElement>
+#include <QtMath>
 #include <utility>
 
 class ElementXmlRetroCompatibility
@@ -1041,11 +1042,15 @@ void Element::setFlip(bool flip)
 	Reflect the whole element geometry (symbol picture + child terminals) about
 	the element origin, according to m_mirror (horizontal) / m_flip (vertical).
 	All child items inherit this transform, so terminals move with the symbol.
-	The texts must stay readable: reflecting each text (or text group) about its
-	own bounding-rect centre leaves its footprint unchanged, so the element
-	reflection above performs the true positional mirror while the local
-	reflection cancels the glyph flip. State is fully derived from the flags, so
-	calling this is idempotent and safe on load, undo/redo and toggling.
+	The texts must stay readable and match the element-editor mirror/flip result:
+	the element reflection above already mirrors every child's POSITION about the
+	element origin, so the per-text compensation must only cancel the inherited
+	glyph flip and negate the text's own rotation (a bounding-rect-centre
+	reflection is correct only at rotation 0). We compute the editor's target
+	pos/rotation (PartDynamicTextField::mirror()/flip()) and solve for the local
+	transform t such that  t * R(rot) * T(pos) * scale(sx,sy)  reproduces it.
+	State is fully derived from the flags, so calling this is idempotent and safe
+	on load, undo/redo and toggling.
 */
 void Element::applyMirrorFlip()
 {
@@ -1056,13 +1061,46 @@ void Element::applyMirrorFlip()
 	t.scale(sx, sy);
 	setTransform(t);
 
-	auto compensate = [sx, sy](QGraphicsItem *item) {
-		const QPointF c = item->boundingRect().center();
-		QTransform ct;
-		ct.translate(c.x(), c.y());
-		ct.scale(sx, sy);
-		ct.translate(-c.x(), -c.y());
-		item->setTransform(ct);
+	const bool mirror = m_mirror, flip = m_flip;
+	auto compensate = [sx, sy, mirror, flip](QGraphicsItem *item) {
+		if (!mirror && !flip) {
+			item->setTransform(QTransform());
+			return;
+		}
+
+		const QPointF p = item->pos();
+		const qreal   w = item->boundingRect().width();
+		const qreal   h = item->boundingRect().height();
+
+			//Editor target pos/rotation: replicate PartDynamicTextField,
+			//chaining mirror then flip (boundingRect is rotation-independent).
+		qreal   rot = item->rotation();
+		QPointF q   = p;
+		if (mirror) {
+			rot = QET::correctAngle(360 - rot, true);
+			const qreal c = qCos(qDegreesToRadians(qreal(qRound(rot))));
+			const qreal s = qSin(qDegreesToRadians(qreal(qRound(rot))));
+			q = QPointF(-q.x() - c * w, q.y() - s * w);
+		}
+		if (flip) {
+			rot = QET::correctAngle(360 - rot, true);
+			const qreal c = qCos(qDegreesToRadians(qreal(qRound(rot))));
+			const qreal s = qSin(qDegreesToRadians(qreal(qRound(rot))));
+			q = QPointF(q.x() + s * h, -q.y() - c * h);
+		}
+
+			//Qt applies the setTransform matrix t OUTSIDE the item rotation:
+			//the child->parent map is  R(rot0) * t * T(pos) * scale(sx,sy).
+			//Solve  R(rot0) * t * T(pos) * scale = R(rot) * T(q)  for t, so t
+			//must pre-cancel R(rot0):  t = R(rot0)^-1 * E * K^-1, K = T(pos)*scale.
+		const qreal a0 = qDegreesToRadians(item->rotation());
+		const qreal a1 = qDegreesToRadians(rot);
+		const QTransform R0(qCos(a0), qSin(a0), -qSin(a0), qCos(a0), 0, 0);
+		const QTransform E = QTransform(qCos(a1), qSin(a1), -qSin(a1), qCos(a1), 0, 0)
+		                   * QTransform(1, 0, 0, 1, q.x(), q.y());
+		const QTransform K = QTransform(1, 0, 0, 1, p.x(), p.y())
+		                   * QTransform(sx, 0, 0, sy, 0, 0);
+		item->setTransform(R0.inverted() * E * K.inverted());
 	};
 
 		//Ungrouped texts are compensated directly; grouped texts are compensated
