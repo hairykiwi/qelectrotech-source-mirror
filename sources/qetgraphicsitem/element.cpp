@@ -977,32 +977,36 @@ QDomElement Element::toXml(
 		//Dynamic texts owned by groups
 	for(ElementTextItemGroup *group : m_texts_group)
 	{
-		group->blockAlignmentUpdate(true);
-			//temporarily remove the texts from group to get the pos relative to element and not group.
-			//Set the alignment to top, because top is not used by groupand so,
-			//each time a text is removed from the group, the alignement is not updated
-		Qt::Alignment al = group->alignment();
-		group->setAlignment(Qt::AlignTop);
+			//Serialize each grouped text with its element-relative ("design")
+			//geometry, computed directly from the group's own pos/rotation.
+			//Do NOT detach via removeFromGroup here: it is a visual-preserving op
+			//(correct for genuine ungroup, see Element::removeTextFromGroup) and on
+			//a mirrored element it bakes the group's reflection into the child x/y,
+			//persisting a half-applied mirror that gets re-applied on load. The
+			//child's group-local pos is reflection-free, so map it through the
+			//group's design transform (pos + rotation; the group has no scale/shear
+			//and origin 0). The live scene is left untouched.
+		const QTransform group_rot = QTransform().rotate(group->rotation());
+		for (DynamicElementTextItem *deti : group->texts())
+		{
+				//Invariant: grouped child rotation == group rotation (forced on join; per-child
+				//rotation has no UI). If this ever desyncs, the bare write below would flatten it.
+			if (!qFuzzyCompare(QET::correctAngle(deti->rotation()),
+							   QET::correctAngle(group->rotation())))
+				qWarning() << "grouped child rotation desync" << deti->rotation()
+						   << "vs group" << group->rotation();
 
-			//Remove the texts from group
-		QList<DynamicElementTextItem *> deti_list = group->texts();
-		for(DynamicElementTextItem *deti : deti_list)
-			group->removeFromGroup(deti);
-
-			//Save the texts to xml
-		for (DynamicElementTextItem *deti : deti_list)
-			dyn_text.appendChild(deti->toXml(document));
-
-			//Re add texts to group
-		for(DynamicElementTextItem *deti : deti_list)
-			group->addToGroup(deti);
-
-			//Restorr the alignment
-		group->setAlignment(al);
+			QDomElement dom_deti = deti->toXml(document);
+			const QPointF design_pos = group->pos() + group_rot.map(deti->pos());
+			dom_deti.setAttribute(QStringLiteral("x"), QString::number(design_pos.x()));
+			dom_deti.setAttribute(QStringLiteral("y"), QString::number(design_pos.y()));
+			dom_deti.setAttribute(QStringLiteral("rotation"),
+				QString::number(QET::correctAngle(group->rotation())));
+			dyn_text.appendChild(dom_deti);
+		}
 
 			//Save the group to xml
 		texts_group.appendChild(group->toXml(document));
-		group->blockAlignmentUpdate(false);
 	}
 
 		//Append the dynamic texts to element
