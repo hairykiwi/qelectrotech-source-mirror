@@ -1301,6 +1301,14 @@ void DynamicElementTextItem::zoomToLinkedElement()
  */
 void DynamicElementTextItem::parentElementRotationChanged()
 {
+		//Layer 1: all element text rotates rigidly with the element — the element's
+		//parent transform supplies the visual rotation, so the text keeps its design
+		//own-rotation (no counter-rotation here). This matches what reload produces
+		//(upside-down + correctly placed at 180°). The keep-visual-to-hold-orientation
+		//behaviour below is layer 2 (readability) and is deliberately suppressed for now;
+		//m_keep_visual_rotation is kept intact (still serialized/editable) for its return.
+	return;
+
 	if (m_parent_element && m_keep_visual_rotation)
 	{
 			//We temporally disconnect for not change m_visual_rotation value.
