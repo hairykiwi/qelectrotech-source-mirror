@@ -1073,8 +1073,15 @@ void Element::applyMirrorFlip()
 		}
 
 		const QPointF p = item->pos();
-		const qreal   w = item->boundingRect().width();
-		const qreal   h = item->boundingRect().height();
+			//Reflection extent = near+far edge of the bbox in the item's OWN frame
+			//(left+right for mirror, top+bottom for flip), NOT bare width/height.
+			//They coincide only when the bbox origin is (0,0) — true for a single
+			//DynamicElementTextItem, but NOT for an ElementTextItemGroup whose bbox
+			//top-left is offset (e.g. y<0). Using bare height() reflects the group
+			//about the wrong line, displacing grouped FLIP by ~2*top (one group height).
+		const QRectF  br = item->boundingRect();
+		const qreal   w = br.left() + br.right();
+		const qreal   h = br.top()  + br.bottom();
 
 			//Editor target pos/rotation: replicate PartDynamicTextField,
 			//chaining mirror then flip (boundingRect is rotation-independent).
