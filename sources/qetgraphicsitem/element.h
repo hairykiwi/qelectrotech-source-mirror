@@ -166,6 +166,16 @@ class Element : public QetGraphicsItem
 			/// element and the readable-text compensation to its child texts.
 		void applyMirrorFlip();
 
+	private:
+			/// Readability (layer-2): correct one child text/group's orientation
+			/// for the current net orientation (element rotation + mirror/flip),
+			/// gated by its "maintain visual rotation" flag (mvr).
+		void correctReadability(QGraphicsItem *item, bool mvr);
+			/// Rotate-trigger entry (architecture A'): funnel rotates through the
+			/// readability correction; only re-run compensate when mirrored/flipped.
+		void onElementRotated();
+	public:
+
 			//METHODS related to texts
 		void addDynamicTextItem(DynamicElementTextItem *deti = nullptr);
 		void removeDynamicTextItem(DynamicElementTextItem *deti);

@@ -129,6 +129,10 @@ Element::Element(
 				t->updateConductor();
 		}
 	});
+
+		//Readability (layer-2, architecture A'): funnel rotates through the
+		//orientation correction; mirrored/flipped cases also re-run compensate.
+	connect(this, &Element::rotationChanged, this, &Element::onElementRotated);
 }
 
 /**
@@ -1125,17 +1129,99 @@ void Element::applyMirrorFlip()
 
 		//Ungrouped texts are compensated directly; grouped texts are compensated
 		//through their group (compensating both would double-reflect them).
+		//Architecture A': orientation-correct each item for readability FIRST, then
+		//compensate reads the corrected rotation/pos — no stale-transform window.
 	for (DynamicElementTextItem *deti : m_dynamic_text_list)
 		if (!deti->parentGroup())
+		{
+			correctReadability(deti, deti->keepVisualRotation());
 			compensate(deti);
+		}
 	for (ElementTextItemGroup *group : m_texts_group)
+	{
+		const QList<DynamicElementTextItem *> gt = group->texts();
+		correctReadability(group, !gt.isEmpty() && gt.first()->keepVisualRotation());
 		compensate(group);
+	}
 
 		//Re-route conductors: Terminal::orientation() / dockConductor() now
 		//reflect the mirror/flip state, and updatePath() re-reads them fresh.
 	for (Terminal *t : terminals())
 		for (Conductor *c : t->conductors())
 			c->updatePath();
+}
+
+/**
+	@brief rotateAboutOwnCentre
+	Rotate item by delta degrees about its own bounding-rect centre, statelessly
+	(no transformOrigin mutation): set rotation and adjust pos so the bbox centre
+	is fixed in the parent frame. newPos = pos + R(own)*C - R(own+delta)*C.
+*/
+static void rotateAboutOwnCentre(QGraphicsItem *item, qreal delta)
+{
+	delta = QET::correctAngle(delta, true);
+	if (qFuzzyIsNull(delta))
+		return;
+	const QPointF c   = item->boundingRect().center();
+	const qreal   own = item->rotation();
+	const QPointF newPos = item->pos()
+		+ QTransform().rotate(own).map(c)
+		- QTransform().rotate(own + delta).map(c);
+	item->setRotation(own + delta);
+	item->setPos(newPos);
+}
+
+/**
+	@brief Element::correctReadability
+	Layer-2 readability correction for one child text/group. Net orientation =
+	element rotation + item's own rotation; reflection parity = mirror XOR flip.
+	mvr (maintain visual rotation) ON  => force tops-up (net -> 0, de-rotate by -net).
+	mvr OFF (ISO default) => if the net orientation is inverted (I), rotate 180°
+	about the item's own bbox centre; readable (R) orientations are a true no-op.
+	Idempotent: only acts on I (drives to R) / only de-rotates when net != 0.
+*/
+void Element::correctReadability(QGraphicsItem *item, bool mvr)
+{
+	const qreal net_raw = rotation() + item->rotation();
+	int net = (qRound(net_raw / 90.0) * 90) % 360;
+	if (net < 0) net += 360;
+
+	if (mvr)
+	{
+		rotateAboutOwnCentre(item, -net_raw);	//tops-up: net -> 0
+		return;
+	}
+
+	const bool parity = m_mirror ^ m_flip;
+	const bool inverted = parity ? (net == 180 || net == 270)
+								  : (net == 90  || net == 180);
+	if (inverted)
+		rotateAboutOwnCentre(item, 180);
+}
+
+/**
+	@brief Element::onElementRotated
+	Rotate-trigger funnel (architecture A'). Mirrored/flipped elements re-run the
+	full applyMirrorFlip (correct + compensate). Plain unmirrored rotates take the
+	short-circuit: orientation-correct only, NEVER compensate — this protects the
+	shipped layer-1 plain-rotate path (843ba6898) by construction.
+*/
+void Element::onElementRotated()
+{
+	if (m_mirror || m_flip)
+	{
+		applyMirrorFlip();
+		return;
+	}
+
+	for (DynamicElementTextItem *deti : m_dynamic_text_list)
+		if (!deti->parentGroup())
+			correctReadability(deti, deti->keepVisualRotation());
+	for (ElementTextItemGroup *group : m_texts_group)
+	{
+		const QList<DynamicElementTextItem *> gt = group->texts();
+		correctReadability(group, !gt.isEmpty() && gt.first()->keepVisualRotation());
+	}
 }
 
 /**
