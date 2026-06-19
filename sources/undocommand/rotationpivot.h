@@ -28,10 +28,10 @@
 	@p target_rotation pivots about its own bounding-rect center (not the
 	default (0,0) corner): keeps the bounding-rect center fixed in the parent
 	frame.
-	Same stateless math as Element::rotateAboutOwnCentre, for an absolute
+	Same stateless math as Element::rotateAboutOwnCenter, for an absolute
 	target: endPos = pos + R(own)*C - R(target)*C. This keeps the user
 	text-rotate pivot consistent with the text-readability correction applied
-	on element rotation/mirror/flip (Element::rotateAboutOwnCentre /
+	on element rotation/mirror/flip (Element::rotateAboutOwnCenter /
 	Element::correctReadability), so user text-rotate no longer drifts
 	position under subsequent element rotation.
 

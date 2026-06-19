@@ -167,11 +167,11 @@ class Element : public QetGraphicsItem
 		void applyMirrorFlip();
 
 	private:
-			/// Readability (layer-2): correct one child text/group's orientation
+			/// Readability: correct one child text/group's orientation
 			/// for the current net orientation (element rotation + mirror/flip),
-			/// gated by its "maintain visual rotation" flag (mvr).
-		void correctReadability(QGraphicsItem *item, bool mvr);
-			/// Rotate-trigger entry (architecture A'): funnel rotates through the
+			/// gated by its keep_visual_rotation flag.
+		void correctReadability(QGraphicsItem *item, bool keep_visual_rotation);
+			/// Rotation-trigger entry: funnel rotates through the
 			/// readability correction; only re-run compensate when mirrored/flipped.
 		void onElementRotated();
 	public:
