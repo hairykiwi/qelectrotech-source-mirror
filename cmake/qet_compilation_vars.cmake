@@ -713,6 +713,7 @@ set(QET_SRC_FILES
   ${QET_DIR}/sources/undocommand/rotateselectioncommand.h
   ${QET_DIR}/sources/undocommand/rotatetextscommand.cpp
   ${QET_DIR}/sources/undocommand/rotatetextscommand.h
+  ${QET_DIR}/sources/undocommand/rotationpivot.h
   ${QET_DIR}/sources/undocommand/movegraphicsitemcommand.cpp
   ${QET_DIR}/sources/undocommand/movegraphicsitemcommand.h
 

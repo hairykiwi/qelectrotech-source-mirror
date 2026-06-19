@@ -24,6 +24,7 @@
 #include "../qetgraphicsitem/diagramtextitem.h"
 #include "../qetgraphicsitem/elementtextitemgroup.h"
 #include "../qtextorientationspinboxwidget.h"
+#include "rotationpivot.h"
 
 /**
 	@brief RotateTextsCommand::RotateTextsCommand
@@ -70,10 +71,19 @@ m_diagram(diagram)
 		if(!text.isNull())
 			setText(text);
 		
+			//Animate rotation AND position in parallel so the rotation pivots about
+			//each item's bounding-rect center (see centerPivotEndPos); undo reverses both via
+			//the shared animation group.
 		for(DiagramTextItem *dti : texts_list)
+		{
 			setupAnimation(dti, "rotation", dti->rotation(), m_rotation);
+			setupAnimation(dti, "pos", dti->pos(), centerPivotEndPos(dti, m_rotation));
+		}
 		for(ElementTextItemGroup *grp : groups_list)
+		{
 			setupAnimation(grp, "rotation", grp->rotation(), m_rotation);
+			setupAnimation(grp, "pos", grp->pos(), centerPivotEndPos(grp, m_rotation));
+		}
 	}
 	else
 		setObsolete(true);
