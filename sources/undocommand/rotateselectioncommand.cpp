@@ -27,6 +27,7 @@
 #include "../qetgraphicsitem/element.h"
 #include "../qetgraphicsitem/elementtextitemgroup.h"
 #include "../qetgraphicsitem/independenttextitem.h"
+#include "rotationpivot.h"
 
 #include <QGraphicsItem>
 
@@ -57,14 +58,24 @@ m_diagram(diagram)
 				case DynamicElementTextItem::Type:
 				{
 					if(item->parentItem() && !item->parentItem()->isSelected())
+					{
 						m_undo << new QPropertyUndoCommand(item->toGraphicsObject(), "rotation", QVariant(item->rotation()), QVariant(item->rotation()+angle), this);
+							//Compensate position so the text pivots about its own
+							//bounding-rect center, matching the readability correction's
+							//pivot (see centerPivotEndPos); undo reverses via the stored
+							//old value.
+						m_undo << new QPropertyUndoCommand(item->toGraphicsObject(), "pos", QVariant(item->pos()), QVariant(centerPivotEndPos(item, item->rotation()+angle)), this);
+					}
 				}
 					break;
 				case QGraphicsItemGroup::Type:
 				{
 					if(ElementTextItemGroup *grp = dynamic_cast<ElementTextItemGroup *>(item))
 						if(grp->parentElement() && !grp->parentElement()->isSelected())
+						{
 							m_undo << new QPropertyUndoCommand(grp, "rotation", QVariant(item->rotation()), QVariant(item->rotation()+angle), this);
+							m_undo << new QPropertyUndoCommand(grp, "pos", QVariant(grp->pos()), QVariant(centerPivotEndPos(grp, grp->rotation()+angle)), this);
+						}
 				}
 					break;
 				case DiagramImageItem::Type:
