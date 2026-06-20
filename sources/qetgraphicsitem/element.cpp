@@ -1078,55 +1078,6 @@ void Element::applyMirrorFlip()
 	t.scale(sx, sy);
 	setTransform(t);
 
-	const bool mirror = m_mirror, flip = m_flip;
-	auto compensate = [sx, sy, mirror, flip](QGraphicsItem *item) {
-		if (!mirror && !flip) {
-			item->setTransform(QTransform());
-			return;
-		}
-
-		const QPointF p = item->pos();
-			//Reflection extent = near+far edge of the bounding rect in the item's OWN frame
-			//(left+right for mirror, top+bottom for flip), NOT bare width/height.
-			//They coincide only when the bounding rect origin is (0,0) — true for a single
-			//DynamicElementTextItem, but NOT for an ElementTextItemGroup whose bounding rect
-			//top-left is offset (e.g. y<0). Using bare height() reflects the group
-			//about the wrong line, displacing grouped FLIP by ~2*top (one group height).
-		const QRectF  br = item->boundingRect();
-		const qreal   w = br.left() + br.right();
-		const qreal   h = br.top()  + br.bottom();
-
-			//Editor target pos/rotation: replicate PartDynamicTextField,
-			//chaining mirror then flip (boundingRect is rotation-independent).
-		qreal   rot = item->rotation();
-		QPointF q   = p;
-		if (mirror) {
-			rot = QET::correctAngle(360 - rot, true);
-			const qreal c = qCos(qDegreesToRadians(qreal(qRound(rot))));
-			const qreal s = qSin(qDegreesToRadians(qreal(qRound(rot))));
-			q = QPointF(-q.x() - c * w, q.y() - s * w);
-		}
-		if (flip) {
-			rot = QET::correctAngle(360 - rot, true);
-			const qreal c = qCos(qDegreesToRadians(qreal(qRound(rot))));
-			const qreal s = qSin(qDegreesToRadians(qreal(qRound(rot))));
-			q = QPointF(q.x() + s * h, -q.y() - c * h);
-		}
-
-			//Qt applies the setTransform matrix t OUTSIDE the item rotation:
-			//the child->parent map is  R(rot0) * t * T(pos) * scale(sx,sy).
-			//Solve  R(rot0) * t * T(pos) * scale = R(rot) * T(q)  for t, so t
-			//must pre-cancel R(rot0):  t = R(rot0)^-1 * E * K^-1, K = T(pos)*scale.
-		const qreal a0 = qDegreesToRadians(item->rotation());
-		const qreal a1 = qDegreesToRadians(rot);
-		const QTransform R0(qCos(a0), qSin(a0), -qSin(a0), qCos(a0), 0, 0);
-		const QTransform E = QTransform(qCos(a1), qSin(a1), -qSin(a1), qCos(a1), 0, 0)
-		                   * QTransform(1, 0, 0, 1, q.x(), q.y());
-		const QTransform K = QTransform(1, 0, 0, 1, p.x(), p.y())
-		                   * QTransform(sx, 0, 0, sy, 0, 0);
-		item->setTransform(R0.inverted() * E * K.inverted());
-	};
-
 		//Ungrouped texts are compensated directly; grouped texts are compensated
 		//through their group (compensating both would double-reflect them).
 		//Orientation-correct each item for readability FIRST, then compensate
@@ -1135,13 +1086,13 @@ void Element::applyMirrorFlip()
 		if (!deti->parentGroup())
 		{
 			correctReadability(deti, deti->keepVisualRotation());
-			compensate(deti);
+			compensateMirrorFlip(deti);
 		}
 	for (ElementTextItemGroup *group : m_texts_group)
 	{
 		const QList<DynamicElementTextItem *> gt = group->texts();
 		correctReadability(group, !gt.isEmpty() && gt.first()->keepVisualRotation());
-		compensate(group);
+		compensateMirrorFlip(group);
 	}
 
 		//Re-route conductors: Terminal::orientation() / dockConductor() now
@@ -1149,6 +1100,65 @@ void Element::applyMirrorFlip()
 	for (Terminal *t : terminals())
 		for (Conductor *c : t->conductors())
 			c->updatePath();
+}
+
+/**
+	@brief Element::compensateMirrorFlip
+	Set @p item's local transform so it sits correctly under the current
+	m_mirror / m_flip reflection (identity transform when neither is set). Reads
+	the item's current rotation/pos, so it must be called AFTER any readability
+	correction. Idempotent — the transform is recomputed from scratch each call.
+*/
+void Element::compensateMirrorFlip(QGraphicsItem *item)
+{
+	const qreal sx = m_mirror ? -1 : 1;
+	const qreal sy = m_flip   ? -1 : 1;
+	const bool mirror = m_mirror, flip = m_flip;
+	if (!mirror && !flip) {
+		item->setTransform(QTransform());
+		return;
+	}
+
+	const QPointF p = item->pos();
+		//Reflection extent = near+far edge of the bounding rect in the item's OWN frame
+		//(left+right for mirror, top+bottom for flip), NOT bare width/height.
+		//They coincide only when the bounding rect origin is (0,0) — true for a single
+		//DynamicElementTextItem, but NOT for an ElementTextItemGroup whose bounding rect
+		//top-left is offset (e.g. y<0). Using bare height() reflects the group
+		//about the wrong line, displacing grouped FLIP by ~2*top (one group height).
+	const QRectF  br = item->boundingRect();
+	const qreal   w = br.left() + br.right();
+	const qreal   h = br.top()  + br.bottom();
+
+		//Editor target pos/rotation: replicate PartDynamicTextField,
+		//chaining mirror then flip (boundingRect is rotation-independent).
+	qreal   rot = item->rotation();
+	QPointF q   = p;
+	if (mirror) {
+		rot = QET::correctAngle(360 - rot, true);
+		const qreal c = qCos(qDegreesToRadians(qreal(qRound(rot))));
+		const qreal s = qSin(qDegreesToRadians(qreal(qRound(rot))));
+		q = QPointF(-q.x() - c * w, q.y() - s * w);
+	}
+	if (flip) {
+		rot = QET::correctAngle(360 - rot, true);
+		const qreal c = qCos(qDegreesToRadians(qreal(qRound(rot))));
+		const qreal s = qSin(qDegreesToRadians(qreal(qRound(rot))));
+		q = QPointF(q.x() + s * h, -q.y() - c * h);
+	}
+
+		//Qt applies the setTransform matrix t OUTSIDE the item rotation:
+		//the child->parent map is  R(rot0) * t * T(pos) * scale(sx,sy).
+		//Solve  R(rot0) * t * T(pos) * scale = R(rot) * T(q)  for t, so t
+		//must pre-cancel R(rot0):  t = R(rot0)^-1 * E * K^-1, K = T(pos)*scale.
+	const qreal a0 = qDegreesToRadians(item->rotation());
+	const qreal a1 = qDegreesToRadians(rot);
+	const QTransform R0(qCos(a0), qSin(a0), -qSin(a0), qCos(a0), 0, 0);
+	const QTransform E = QTransform(qCos(a1), qSin(a1), -qSin(a1), qCos(a1), 0, 0)
+	                   * QTransform(1, 0, 0, 1, q.x(), q.y());
+	const QTransform K = QTransform(1, 0, 0, 1, p.x(), p.y())
+	                   * QTransform(sx, 0, 0, sy, 0, 0);
+	item->setTransform(R0.inverted() * E * K.inverted());
 }
 
 /**
