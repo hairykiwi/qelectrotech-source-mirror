@@ -21,8 +21,11 @@
 #include <QUndoCommand>
 #include <QPointer>
 #include <QHash>
+#include <QList>
 
 class ConductorTextItem;
+class DynamicElementTextItem;
+class ElementTextItemGroup;
 class Diagram;
 class QParallelAnimationGroup;
 
@@ -42,10 +45,16 @@ class RotateTextsCommand : public QUndoCommand
 	private:
 		void openDialog();
 		void setupAnimation(QObject *target, const QByteArray &propertyName, const QVariant& start, const QVariant& end);
+			//Re-apply the readability correction to each rotated text/group once
+			//the rotation animation has settled (connected to the animation
+			//group's finished signal — fires after both redo and undo).
+		void finalizeReadability();
 
 	private:
 		QPointer<Diagram> m_diagram;
 		QHash<ConductorTextItem *, bool> m_cond_texts;
+		QList<QPointer<DynamicElementTextItem>> m_texts;
+		QList<QPointer<ElementTextItemGroup>> m_groups;
 		qreal m_rotation=0;
 		QParallelAnimationGroup *m_anim_group = nullptr;
 };
