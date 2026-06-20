@@ -1211,6 +1211,29 @@ void Element::correctReadability(QGraphicsItem *item, bool keep_visual_rotation)
 }
 
 /**
+	@brief Element::correctTextReadability
+	Public single-item entry to the readability correction, for callers outside
+	the element-level rotate/mirror/flip path (e.g. a text's own rotation changed
+	by the user via a rotate command). Resolves keep_visual_rotation the same way
+	the internal call sites do, then delegates to correctReadability.
+*/
+void Element::correctTextReadability(QGraphicsItem *item)
+{
+	if (DynamicElementTextItem *deti = dynamic_cast<DynamicElementTextItem *>(item))
+		correctReadability(deti, deti->keepVisualRotation());
+	else if (ElementTextItemGroup *group = dynamic_cast<ElementTextItemGroup *>(item))
+	{
+		const QList<DynamicElementTextItem *> gt = group->texts();
+		correctReadability(group, !gt.isEmpty() && gt.first()->keepVisualRotation());
+	}
+		//Under mirror/flip the readable position also needs the per-item
+		//reflection compensation (the same pair applyMirrorFlip applies); plain
+		//rotation does not, matching onElementRotated's short-circuit.
+	if (m_mirror || m_flip)
+		compensateMirrorFlip(item);
+}
+
+/**
 	@brief Element::onElementRotated
 	Rotation-trigger funnel. Mirrored/flipped elements re-run the full
 	applyMirrorFlip (correct + compensate). Plain unmirrored rotates take the

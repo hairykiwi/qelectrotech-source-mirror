@@ -22,9 +22,13 @@
 #include "../qetapp.h"
 #include "../qetgraphicsitem/conductortextitem.h"
 #include "../qetgraphicsitem/diagramtextitem.h"
+#include "../qetgraphicsitem/dynamicelementtextitem.h"
+#include "../qetgraphicsitem/element.h"
 #include "../qetgraphicsitem/elementtextitemgroup.h"
 #include "../qtextorientationspinboxwidget.h"
 #include "rotationpivot.h"
+
+#include <QParallelAnimationGroup>
 
 /**
 	@brief RotateTextsCommand::RotateTextsCommand
@@ -78,12 +82,22 @@ m_diagram(diagram)
 		{
 			setupAnimation(dti, "rotation", dti->rotation(), m_rotation);
 			setupAnimation(dti, "pos", dti->pos(), centerPivotEndPos(dti, m_rotation));
+			if(DynamicElementTextItem *deti = dynamic_cast<DynamicElementTextItem *>(dti))
+				m_texts << deti;
 		}
 		for(ElementTextItemGroup *grp : groups_list)
 		{
 			setupAnimation(grp, "rotation", grp->rotation(), m_rotation);
 			setupAnimation(grp, "pos", grp->pos(), centerPivotEndPos(grp, m_rotation));
+			m_groups << grp;
 		}
+			//Re-apply the readability correction once the rotation animation has
+			//settled — own-rotation change does not otherwise re-fire the
+			//element's correction. finished() fires after both the forward (redo)
+			//and backward (undo) runs; correctTextReadability is idempotent.
+		if(m_anim_group)
+			QObject::connect(m_anim_group, &QParallelAnimationGroup::finished,
+							 m_anim_group, [this](){ finalizeReadability(); });
 	}
 	else
 		setObsolete(true);
@@ -156,4 +170,14 @@ void RotateTextsCommand::setupAnimation(QObject *target, const QByteArray &prope
 	animation->setEndValue(end);
 	animation->setEasingCurve(QEasingCurve::OutQuad);
 	m_anim_group->addAnimation(animation);
+}
+
+void RotateTextsCommand::finalizeReadability()
+{
+	for(const QPointer<DynamicElementTextItem> &deti : m_texts)
+		if(deti && deti->parentElement())
+			deti->parentElement()->correctTextReadability(deti);
+	for(const QPointer<ElementTextItemGroup> &grp : m_groups)
+		if(grp && grp->parentElement())
+			grp->parentElement()->correctTextReadability(grp);
 }

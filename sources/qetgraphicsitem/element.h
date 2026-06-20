@@ -165,6 +165,13 @@ class Element : public QetGraphicsItem
 			/// (Re)apply the reflection transform from m_mirror/m_flip to this
 			/// element and the readable-text compensation to its child texts.
 		void applyMirrorFlip();
+			/// Re-apply the readable-text correction to ONE child text/group,
+			/// e.g. after the user changes that item's own rotation. The rotate
+			/// commands call this once on finalize (own-rotation change does not
+			/// otherwise re-fire the correction). Resolves the item's
+			/// keep_visual_rotation flag and delegates to correctReadability;
+			/// idempotent.
+		void correctTextReadability(QGraphicsItem *item);
 
 	private:
 			/// Readability: correct one child text/group's orientation

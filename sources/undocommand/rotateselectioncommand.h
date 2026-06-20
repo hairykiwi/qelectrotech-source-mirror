@@ -24,6 +24,8 @@
 
 class Diagram;
 class ConductorTextItem;
+class DynamicElementTextItem;
+class ElementTextItemGroup;
 class QPropertyUndoCommand;
 
 /**
@@ -40,11 +42,18 @@ class RotateSelectionCommand : public QUndoCommand
 		bool isValid();
 
 	private:
+		void correctSelectedTexts();
+
 		Diagram *m_diagram =nullptr;
 
 		QList<QPointer<ConductorTextItem>> m_cond_text;
 		QHash<ConductorTextItem *, bool> m_rotate_by_user;
 		QList<QPropertyUndoCommand*> m_undo;
+
+			//Directly-selected element text/groups to re-correct for readability
+			//on redo (own-rotation change does not re-fire the correction).
+		QList<QPointer<DynamicElementTextItem>> m_corr_texts;
+		QList<QPointer<ElementTextItemGroup>> m_corr_groups;
 
 };
 
