@@ -168,6 +168,11 @@ class Element : public QetGraphicsItem
 			/// for the current net orientation (element rotation + mirror/flip),
 			/// gated by its keep_visual_rotation flag.
 		void correctReadability(QGraphicsItem *item, bool keep_visual_rotation);
+			/// Set one child text/group's local transform to place it correctly
+			/// under the current mirror/flip reflection (identity when neither is
+			/// set). Reads the item's current rotation/pos, so call it AFTER
+			/// correctReadability. Idempotent.
+		void compensateMirrorFlip(QGraphicsItem *item);
 			/// Rotation-trigger entry: funnel rotates through the
 			/// readability correction; only re-run compensate when mirrored/flipped.
 		void onElementRotated();
