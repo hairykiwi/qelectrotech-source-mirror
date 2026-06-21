@@ -1071,8 +1071,8 @@ void Element::applyMirrorFlip()
 
 		//Ungrouped texts are compensated directly; grouped texts are compensated
 		//through their group (compensating both would double-reflect them).
-		//Orientation-correct each item for readability FIRST, then compensate
-		//reads the corrected rotation/pos — no stale-transform window.
+		//For each item, apply the readability correction (a no-op unless the text
+		//keeps its visual rotation), then the mirror/flip position compensation.
 	for (DynamicElementTextItem *deti : m_dynamic_text_list)
 		if (!deti->parentGroup())
 		{
@@ -1175,30 +1175,20 @@ static void rotateAboutOwnCenter(QGraphicsItem *item, qreal delta)
 /**
 	@brief Element::correctReadability
 	Readability correction for one child text/group. Net orientation =
-	element rotation + item's own rotation; reflection parity = mirror XOR flip.
-	keep_visual_rotation ON  => force tops-up (net -> 0, de-rotate by -net).
-	keep_visual_rotation OFF (ISO default) => if the net orientation is inverted (I),
-	rotate 180° about the item's own bounding-rect center; readable (R) orientations
-	are a true no-op.
-	Idempotent: only acts on I (drives to R) / only de-rotates when net != 0.
+	element rotation + item's own rotation.
+	keep_visual_rotation ON  => force tops-up (net -> 0, de-rotate by -net),
+	pivoting about the item's own bounding-rect center.
+	keep_visual_rotation OFF => no-op: the text keeps whatever orientation the
+	user set. It is still correctly pivoted and positioned under mirror/flip by
+	the separate geometry steps (rotationpivot.h, compensateMirrorFlip); this
+	function simply never re-orients it.
+	Idempotent: only de-rotates when keep_visual_rotation is on and net != 0.
 */
 void Element::correctReadability(QGraphicsItem *item, bool keep_visual_rotation)
 {
 	const qreal net_raw = rotation() + item->rotation();
-	int net = (qRound(net_raw / 90.0) * 90) % 360;
-	if (net < 0) net += 360;
-
 	if (keep_visual_rotation)
-	{
 		rotateAboutOwnCenter(item, -net_raw);	//tops-up: net -> 0
-		return;
-	}
-
-	const bool parity = m_mirror ^ m_flip;
-	const bool inverted = parity ? (net == 180 || net == 270)
-								  : (net == 90  || net == 180);
-	if (inverted)
-		rotateAboutOwnCenter(item, 180);
 }
 
 /**
