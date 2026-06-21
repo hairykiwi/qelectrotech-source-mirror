@@ -8,5 +8,7 @@ doc/*
 QElectroTech.tag
 !doc/doc-utils
 build_qt6/
+debug-logs/
 .DS_Store
 CLAUDE.md
+CC-TASKS.md
