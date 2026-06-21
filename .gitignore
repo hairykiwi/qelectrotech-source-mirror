@@ -7,3 +7,5 @@ doc/*
 !doc/QElectroTech.qch
 QElectroTech.tag
 !doc/doc-utilsbuild/
+debug-logs/
+CC-TASKS.md
