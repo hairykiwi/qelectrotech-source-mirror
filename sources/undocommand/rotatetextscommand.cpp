@@ -27,8 +27,7 @@
 #include "../qetgraphicsitem/elementtextitemgroup.h"
 #include "../qtextorientationspinboxwidget.h"
 #include "rotationpivot.h"
-
-#include <QParallelAnimationGroup>
+#include "../QPropertyUndoCommand/qpropertyundocommand.h"
 
 /**
 	@brief RotateTextsCommand::RotateTextsCommand
@@ -59,7 +58,9 @@ m_diagram(diagram)
 	if(texts_list.count() || groups_list.count())
 	{
 		openDialog();
-		
+		if(isObsolete())	//dialog cancelled: rotate nothing
+			return;
+
 		QString text;
 		if(texts_list.count())
 			text.append(QObject::tr("Pivoter %1 textes").arg(texts_list.count()));
@@ -75,57 +76,55 @@ m_diagram(diagram)
 		if(!text.isNull())
 			setText(text);
 		
-			//Animate rotation AND position in parallel so the rotation pivots about
-			//each item's bounding-rect center (see centerPivotEndPos); undo reverses both via
-			//the shared animation group.
+			//Set rotation AND position synchronously (no animation) so the rotation
+			//pivots about each item's bounding-rect center (see centerPivotEndPos),
+			//and the readability correction in redo()/undo() reads the settled
+			//rotation. The child commands are parented to this command, so
+			//QUndoCommand::redo()/undo() drives them as one atomic step; undo
+			//reverses via the stored old values.
 		for(DiagramTextItem *dti : texts_list)
 		{
-			setupAnimation(dti, "rotation", dti->rotation(), m_rotation);
-			setupAnimation(dti, "pos", dti->pos(), centerPivotEndPos(dti, m_rotation));
+			new QPropertyUndoCommand(dti, "rotation", QVariant(dti->rotation()), QVariant(m_rotation), this);
+			new QPropertyUndoCommand(dti, "pos", QVariant(dti->pos()), QVariant(centerPivotEndPos(dti, m_rotation)), this);
 			if(DynamicElementTextItem *deti = dynamic_cast<DynamicElementTextItem *>(dti))
 				m_texts << deti;
 		}
 		for(ElementTextItemGroup *grp : groups_list)
 		{
-			setupAnimation(grp, "rotation", grp->rotation(), m_rotation);
-			setupAnimation(grp, "pos", grp->pos(), centerPivotEndPos(grp, m_rotation));
+			new QPropertyUndoCommand(grp, "rotation", QVariant(grp->rotation()), QVariant(m_rotation), this);
+			new QPropertyUndoCommand(grp, "pos", QVariant(grp->pos()), QVariant(centerPivotEndPos(grp, m_rotation)), this);
 			m_groups << grp;
 		}
-			//Re-apply the readability correction once the rotation animation has
-			//settled — own-rotation change does not otherwise re-fire the
-			//element's correction. finished() fires after both the forward (redo)
-			//and backward (undo) runs; correctTextReadability is idempotent.
-		if(m_anim_group)
-			QObject::connect(m_anim_group, &QParallelAnimationGroup::finished,
-							 m_anim_group, [this](){ finalizeReadability(); });
 	}
 	else
 		setObsolete(true);
-	
+
 }
 
 void RotateTextsCommand::undo()
 {
 	if(m_diagram)
 		m_diagram.data()->showMe();
-	
-	m_anim_group->setDirection(QAnimationGroup::Backward);
-	m_anim_group->start();
-	
+
+	QUndoCommand::undo();
+
 	for(ConductorTextItem *cti : m_cond_texts.keys())
 		cti->forceMovedByUser(m_cond_texts.value(cti));
+
+	correctSelectedTexts();
 }
 
 void RotateTextsCommand::redo()
 {
 	if(m_diagram)
 		m_diagram.data()->showMe();
-	
-	m_anim_group->setDirection(QAnimationGroup::Forward);
-	m_anim_group->start();
-	
+
+	QUndoCommand::redo();
+
 	for(ConductorTextItem *cti : m_cond_texts.keys())
 		cti->forceMovedByUser(true);
+
+	correctSelectedTexts();
 }
 
 void RotateTextsCommand::openDialog()
@@ -159,20 +158,16 @@ void RotateTextsCommand::openDialog()
 		setObsolete(true);
 }
 
-void RotateTextsCommand::setupAnimation(QObject *target, const QByteArray &propertyName, const QVariant& start, const QVariant& end)
-{
-	if(m_anim_group == nullptr)
-		m_anim_group = new QParallelAnimationGroup();
-	
-	QPropertyAnimation *animation = new QPropertyAnimation(target, propertyName);
-	animation->setDuration(300);
-	animation->setStartValue(start);
-	animation->setEndValue(end);
-	animation->setEasingCurve(QEasingCurve::OutQuad);
-	m_anim_group->addAnimation(animation);
-}
-
-void RotateTextsCommand::finalizeReadability()
+/**
+	@brief RotateTextsCommand::correctSelectedTexts
+	Re-apply the readability correction (and, under mirror/flip, the reflection
+	compensation) to each rotated text/group. Own-rotation change does not
+	otherwise re-fire it. Called on BOTH redo and undo: compensate sets an
+	absolute item transform that the rotation/pos reversal does not restore, so
+	undo must recompute it for the reverted rotation. correctTextReadability is
+	idempotent.
+*/
+void RotateTextsCommand::correctSelectedTexts()
 {
 	for(const QPointer<DynamicElementTextItem> &deti : m_texts)
 		if(deti && deti->parentElement())
