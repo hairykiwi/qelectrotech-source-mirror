@@ -1885,7 +1885,7 @@ void QETDiagramEditor::addProjectView(ProjectView *project_view)
 	connect(project_view, &ProjectView::diagramActivated, this, [this](DiagramView *dv) {
 		if (dv && dv->diagram() && pa) {
 			// 1. Find the item in the tree that corresponds to this diagram
-			QTreeWidgetItem *item = pa->elementsPanel().getItemForDiagram(dv->diagram());
+			QTreeWidgetItem *item = pa->elementsPanel().itemForDiagram(dv->diagram());
 
 				   // 2. If you find it, select it
 			if (item) {
@@ -1898,7 +1898,7 @@ void QETDiagramEditor::addProjectView(ProjectView *project_view)
 	connect(this, &QETDiagramEditor::syncElementsPanel, this, [this]() {
 		if (pa && currentDiagramView()) {
 				// In the tree, find the element that corresponds to the diagram of the selected project.
-			QTreeWidgetItem *item = pa->elementsPanel().getItemForDiagram(currentDiagramView()->diagram());
+			QTreeWidgetItem *item = pa->elementsPanel().itemForDiagram(currentDiagramView()->diagram());
 			if (item) {
 					// select the diagram
 				pa->elementsPanel().setCurrentItem(item);
