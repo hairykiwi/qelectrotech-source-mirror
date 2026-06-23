@@ -162,9 +162,16 @@ QTreeWidgetItem *ElementsPanel::addProject(QETProject *project,
 
 	if (first_add){
 		qtwi_project -> setExpanded(true);
-		// on adding an project select first diagram
-		setCurrentItem(qtwi_project -> child(0));
-		qtwi_project -> child(0)->setSelected(true);
+		// on adding an project select first diagram, but only when the project
+		// item is actually attached to the tree: if it was added before the
+		// panel's collection items existed, the insert above received index -1
+		// and left it detached, and setCurrentItem() on a detached subtree can
+		// crash in QTreeModel. reload() re-adds the project attached shortly
+		// after and performs the selection then.
+		if (qtwi_project -> treeWidget()) {
+			setCurrentItem(qtwi_project -> child(0));
+			qtwi_project -> child(0)->setSelected(true);
+		}
 	}
 	else {
 		// 2. Check whether we can restore the previous selection
