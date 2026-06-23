@@ -152,7 +152,7 @@ Diagram::~Diagram()
 			continue;
 		deletable_items.append(qgi);
 	}
-	for (const auto &item : qAsConst(deletable_items))
+	for (const auto &item : std::as_const(deletable_items))
 	{
 		removeItem(item);
 		delete item;
@@ -1458,12 +1458,12 @@ bool Diagram::fromXml(QDomElement &document,
 	if (position != QPointF())
 	{
 		QVector <QGraphicsItem *> added_items;
-		for (auto element : qAsConst(added_elements   )) added_items << element;
-		for (auto shape   : qAsConst(added_shapes     )) added_items << shape;
-		for (auto text    : qAsConst(added_texts      )) added_items << text;
-		for (auto image   : qAsConst(added_images     )) added_items << image;
-		for (auto table   : qAsConst(added_tables     )) added_items << table;
-		for (const auto &strip : qAsConst(added_strips)) added_items << strip;
+		for (auto element : std::as_const(added_elements   )) added_items << element;
+		for (auto shape   : std::as_const(added_shapes     )) added_items << shape;
+		for (auto text    : std::as_const(added_texts      )) added_items << text;
+		for (auto image   : std::as_const(added_images     )) added_items << image;
+		for (auto table   : std::as_const(added_tables     )) added_items << table;
+		for (const auto &strip : std::as_const(added_strips)) added_items << strip;
 
 		//Get the top left corner of the rectangle that contain all added items
 		QRectF items_rect;
@@ -1514,14 +1514,6 @@ bool Diagram::fromXml(QDomElement &document,
 	if (content_ptr) {
 		content_ptr -> m_elements           = added_elements;
 		content_ptr -> m_conductors_to_move = added_conductors;
-#if QT_VERSION < QT_VERSION_CHECK(5, 14, 0)	// ### Qt 6: remove
-		content_ptr -> m_text_fields        = added_texts.toSet();
-		content_ptr -> m_images			    = added_images.toSet();
-		content_ptr -> m_shapes			    = added_shapes.toSet();
-#else
-#if TODO_LIST
-#pragma message("@TODO remove code for QT 5.14 or later")
-#endif
 		content_ptr -> m_text_fields	= QSet<IndependentTextItem *>(
 					added_texts.begin(),
 					added_texts.end());
@@ -1532,7 +1524,6 @@ bool Diagram::fromXml(QDomElement &document,
 					added_shapes.begin(),
 					added_shapes.end());
 		content_ptr->m_terminal_strip.swap(added_strips);
-#endif
 		content_ptr->m_tables.swap(added_tables);
 	}
 
@@ -1599,11 +1590,11 @@ void Diagram::refreshContents()
 		conductor->refreshText();
 	}
 
-	for (auto &table : qAsConst(dc_.m_tables)) {
+	for (auto &table : std::as_const(dc_.m_tables)) {
 		table->initLink();
 	}
 
-	for (auto &strip :qAsConst(dc_.m_terminal_strip)) {
+	for (auto &strip :std::as_const(dc_.m_terminal_strip)) {
 		strip->refreshPending();
 	}
 }
@@ -1788,7 +1779,7 @@ void Diagram::invertSelection()
 			item_list << item;
 		}
 	}
-	for (auto item : qAsConst(item_list)) {
+	for (auto item : std::as_const(item_list)) {
 		item -> setSelected(!item -> isSelected());
 	}
 

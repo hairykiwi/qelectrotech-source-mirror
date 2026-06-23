@@ -1,0 +1,48 @@
+# .understandignore — patterns for files/dirs to exclude from analysis
+# Syntax: same as .gitignore (globs, # comments, ! negation, trailing / for dirs)
+# Lines below are suggestions — uncomment to activate.
+# Use ! prefix to force-include something excluded by defaults.
+#
+# Built-in defaults (always excluded unless negated):
+#   node_modules/, .git/, dist/, build/, obj/, *.lock, *.min.js, etc.
+#
+# --- From .gitignore (uncomment to exclude) ---
+
+# *.snap
+# .flatpak-builder
+# *.user
+# doc/*
+# !doc/QElectroTech.qch
+# QElectroTech.tag
+# !doc/doc-utils
+build_qt6/
+# .DS_Store
+# CLAUDE.md
+
+# --- Detected directories (uncomment to exclude) ---
+
+# tests/
+# docs/
+# examples/
+
+# --- Test file patterns (uncomment to exclude) ---
+
+# *.test.*
+# *.spec.*
+# *.snap
+
+# --- QET-specific exclusions ---
+
+# Third-party vendored libraries (not QET source)
+pugixml/
+SingleApplication/
+
+# XML element/titleblock collections (thousands of XML data files, not code)
+elements/
+titleblocks/
+
+# Compiled Qt translation binaries
+*.qm
+
+# Build artifacts
+build/

@@ -139,12 +139,12 @@ QWidget *ExportDialog::initDiagramsListPart()
 	reset_mapper_     = new QSignalMapper(this);
 	clipboard_mapper_ = new QSignalMapper(this);
 	
-	connect(preview_mapper_,   SIGNAL(mapped(int)), this, SLOT(slot_previewDiagram(int)));
-	connect(width_mapper_,     SIGNAL(mapped(int)), this, SLOT(slot_correctHeight(int)));
-	connect(height_mapper_,    SIGNAL(mapped(int)), this, SLOT(slot_correctWidth(int)));
-	connect(ratio_mapper_,     SIGNAL(mapped(int)), this, SLOT(slot_keepRatioChanged(int)));
-	connect(reset_mapper_,     SIGNAL(mapped(int)), this, SLOT(slot_resetSize(int)));
-	connect(clipboard_mapper_, SIGNAL(mapped(int)), this, SLOT(slot_exportToClipBoard(int)));
+	connect(preview_mapper_,   &QSignalMapper::mappedInt, this, &ExportDialog::slot_previewDiagram);
+	connect(width_mapper_,     &QSignalMapper::mappedInt, this, &ExportDialog::slot_correctHeight);
+	connect(height_mapper_,    &QSignalMapper::mappedInt, this, &ExportDialog::slot_correctWidth);
+	connect(ratio_mapper_,     &QSignalMapper::mappedInt, this, &ExportDialog::slot_keepRatioChanged);
+	connect(reset_mapper_,     &QSignalMapper::mappedInt, this, &ExportDialog::slot_resetSize);
+	connect(clipboard_mapper_, &QSignalMapper::mappedInt, this, &ExportDialog::slot_exportToClipBoard);
 	
 	diagrams_list_layout_ = new QGridLayout();
 	
@@ -171,18 +171,18 @@ QWidget *ExportDialog::initDiagramsListPart()
 		height_mapper_ -> setMapping(diagram_line -> height,     line_count);
 		ratio_mapper_  -> setMapping(diagram_line -> keep_ratio, line_count);
 		reset_mapper_  -> setMapping(diagram_line -> reset_size, line_count);
-		connect(diagram_line -> width,      SIGNAL(valueChanged(int)), width_mapper_,  SLOT(map()));
-		connect(diagram_line -> height,     SIGNAL(valueChanged(int)), height_mapper_, SLOT(map()));
-		connect(diagram_line -> keep_ratio, SIGNAL(toggled(bool)),     ratio_mapper_,  SLOT(map()));
-		connect(diagram_line -> reset_size, SIGNAL(clicked(bool)),     reset_mapper_,  SLOT(map()));
+		connect(diagram_line -> width,      qOverload<int>(&QSpinBox::valueChanged), width_mapper_,  qOverload<>(&QSignalMapper::map));
+		connect(diagram_line -> height,     qOverload<int>(&QSpinBox::valueChanged), height_mapper_, qOverload<>(&QSignalMapper::map));
+		connect(diagram_line -> keep_ratio, &QPushButton::toggled,                   ratio_mapper_,  qOverload<>(&QSignalMapper::map));
+		connect(diagram_line -> reset_size, &QPushButton::clicked,                   reset_mapper_,  qOverload<>(&QSignalMapper::map));
 		
 		// mappings et signaux pour l'apercu du schema
 		preview_mapper_ -> setMapping(diagram_line -> preview, line_count);
-		connect(diagram_line -> preview, SIGNAL(clicked(bool)), preview_mapper_, SLOT(map()));
-		
+		connect(diagram_line -> preview, &QPushButton::clicked, preview_mapper_, qOverload<>(&QSignalMapper::map));
+
 		// mappings et signaux pour l'export du schema vers le presse-papier
 		clipboard_mapper_ -> setMapping(diagram_line -> clipboard, line_count);
-		connect(diagram_line -> clipboard, SIGNAL(clicked(bool)), clipboard_mapper_, SLOT(map()));
+		connect(diagram_line -> clipboard, &QPushButton::clicked, clipboard_mapper_, qOverload<>(&QSignalMapper::map));
 	}
 	
 	QWidget *widget_diagrams_list = new QWidget();

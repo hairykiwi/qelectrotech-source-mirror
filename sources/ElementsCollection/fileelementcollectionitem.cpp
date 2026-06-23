@@ -363,7 +363,7 @@ void FileElementCollectionItem::setUpIcon()
 			setIcon(QET::Icons::Folder);
 		} else {
 			if (m_path.endsWith(".qetmak")) {
-				setIcon(QIcon());
+				setIcon(QET::Icons::PartRectangle);
 			} else {
 				ElementsLocation loc(collectionPath());
 				setIcon(loc.icon());

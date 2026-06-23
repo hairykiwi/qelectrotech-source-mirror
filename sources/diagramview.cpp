@@ -100,7 +100,7 @@ DiagramView::DiagramView(Diagram *diagram, QWidget *parent) :
 
 	connect(m_diagram, SIGNAL(showDiagram(Diagram*)), this, SIGNAL(showDiagram(Diagram*)));
 	connect(m_diagram, SIGNAL(sceneRectChanged(QRectF)), this, SLOT(adjustSceneRect()));
-	connect(&(m_diagram -> border_and_titleblock), SIGNAL(diagramTitleChanged(const QString &)), this, SLOT(updateWindowTitle()));
+	connect(&(m_diagram->border_and_titleblock), &BorderTitleBlock::informationChanged, this, &DiagramView::updateWindowTitle);
 	connect(diagram, SIGNAL(findElementRequired(ElementsLocation)), this, SIGNAL(findElementRequired(ElementsLocation)));
 
 	QShortcut *edit_conductor_color_shortcut = new QShortcut(QKeySequence(Qt::Key_F2), this);
@@ -210,17 +210,10 @@ void DiagramView::handleElementDrop(QDropEvent *event)
 		return;
 	}
 
-	QPointF drop_pos;
-	#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)	// ### Qt 6: remove
-	drop_pos = mapToScene(event->pos());
-	#else
-	drop_pos = event->position();
-	#endif
-
 	if (location.path().endsWith(".qetmak")) {
-		diagram()->setEventInterface(new DiagramEventAddMacro(location, diagram(), drop_pos));
+		diagram()->setEventInterface(new DiagramEventAddMacro(location, diagram(), event->position()));
 	} else {
-		diagram()->setEventInterface(new DiagramEventAddElement(location, diagram(), drop_pos));
+		diagram()->setEventInterface(new DiagramEventAddElement(location, diagram(), event->position()));
 	}
 
 	//Set focus to the view to get event
@@ -290,17 +283,8 @@ void DiagramView::handleTextDrop(QDropEvent *e) {
 		iti -> setHtml (e -> mimeData() -> text());
 	}
 
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)	// ### Qt 6: remove
-
-	m_diagram->undoStack().push(new AddGraphicsObjectCommand(
-									iti, m_diagram, mapToScene(e->pos())));
-#else
-#if TODO_LIST
-#pragma message("@TODO remove code for QT 6 or later")
-#endif
 	m_diagram->undoStack().push(new AddGraphicsObjectCommand(
 									iti, m_diagram, e->position()));
-#endif
 }
 
 /**
@@ -458,14 +442,7 @@ void DiagramView::mousePressEvent(QMouseEvent *e)
 	if (m_event_interface && m_event_interface->mousePressEvent(e)) return;
 
 		//Start drag view when hold the middle button
-#if QT_VERSION < QT_VERSION_CHECK(5, 15, 1) // ### Qt 6: remove
-	if (e->button() == Qt::MidButton)
-#else
-#if TODO_LIST
-#pragma message("@TODO remove code for QT 6 or later")
-#endif
 	if (e->button() == Qt::MiddleButton)
-#endif
 	{
 		m_drag_last_pos = e->pos();
 		viewport()->setCursor(Qt::ClosedHandCursor);
@@ -515,14 +492,7 @@ void DiagramView::mouseMoveEvent(QMouseEvent *e)
 	if (m_event_interface && m_event_interface->mouseMoveEvent(e)) return;
 
 		// Drag the view
-#if QT_VERSION < QT_VERSION_CHECK(5, 15, 1) // ### Qt 6: remove
-	if (e->buttons() == Qt::MidButton)
-#else
-#if TODO_LIST
-#pragma message("@TODO remove code for QT 6 or later")
-#endif
 	if (e->buttons() == Qt::MiddleButton)
-#endif
 	{
 		QScrollBar *h = horizontalScrollBar();
 		QScrollBar *v = verticalScrollBar();
@@ -583,14 +553,7 @@ void DiagramView::mouseReleaseEvent(QMouseEvent *e)
 	if (m_event_interface && m_event_interface->mouseReleaseEvent(e)) return;
 
 		// Stop drag view
-#if QT_VERSION < QT_VERSION_CHECK(5, 15, 1) // ### Qt 6: remove
-	if (e->button() == Qt::MidButton)
-#else
-#if TODO_LIST
-#pragma message("@TODO remove code for QT 6 or later")
-#endif
 	if (e->button() == Qt::MiddleButton)
-#endif
 	{
 		viewport()->setCursor(Qt::ArrowCursor);
 	}
@@ -624,14 +587,7 @@ void DiagramView::mouseReleaseEvent(QMouseEvent *e)
 			QMenu *menu = new QMenu(this);
 			menu->addAction(act);
 
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)	// ### Qt 6: remove
-			menu->popup(e->globalPos());
-#else
-#if TODO_LIST
-#pragma message("@TODO remove code for QT 6 or later")
-#endif
 			menu->popup(e->pos());
-#endif
 		}
 
 		m_free_rubberbanding = false;
@@ -1355,7 +1311,6 @@ void DiagramView::createTemplateFromSelection()
 	QFile file(full_path);
 	if (file.open(QIODevice::WriteOnly | QIODevice::Text)) {
 		QTextStream out(&file);
-		out.setCodec("UTF-8");
 		out << macro_doc.toString(4);
 		file.close();
 		qDebug() << "Template successfully saved to:" << full_path;

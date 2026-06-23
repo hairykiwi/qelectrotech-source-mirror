@@ -167,7 +167,7 @@ void DynamicElementTextItem::fromXml(const QDomElement &dom_elmt)
 	if (dom_elmt.hasAttribute("font"))
 	{
 		QFont font;
-		font.fromString(dom_elmt.attribute("font"));
+		font.fromString(QETApp::sanitizeFontString(dom_elmt.attribute("font")));
 		setFont(font);
 	}
 	else	//Retrocompatibility during the 0.7 dev because the font property was added lately. TODO remove this part in futur

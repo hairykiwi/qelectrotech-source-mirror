@@ -97,7 +97,8 @@ QETDiagramEditor::QETDiagramEditor(const QStringList &files, QWidget *parent) :
 	m_workspace.setTabsClosable(true);
 
 		//Set the signal mapper
-	connect(&windowMapper, SIGNAL(mapped(QWidget *)), this, SLOT(activateWidget(QWidget *)));
+	connect(&windowMapper, &QSignalMapper::mappedObject, this,
+	        [this](QObject *obj){ activateWidget(qobject_cast<QWidget *>(obj)); });
 
 	setWindowTitle(tr("QElectroTech", "window title"));
 	setWindowIcon(QET::Icons::QETLogo);
@@ -2020,7 +2021,7 @@ void QETDiagramEditor::slot_updateWindowsMenu()
 		action -> setStatusTip(QString(tr("Active le projet « %1 »")).arg(pv_title));
 		action -> setCheckable(true);
 		action -> setChecked(project_view == currentProjectView());
-		connect(action, SIGNAL(triggered()), &windowMapper, SLOT(map()));
+		connect(action, &QAction::triggered, &windowMapper, qOverload<>(&QSignalMapper::map));
 		windowMapper.setMapping(action, project_view);
 	}
 }

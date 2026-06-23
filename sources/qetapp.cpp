@@ -119,8 +119,8 @@ QETApp::QETApp() :
 	initSplashScreen();
 	initSystemTray();
 
-	connect(&signal_map, SIGNAL(mapped(QWidget *)),
-		this, SLOT(invertMainWindowVisibility(QWidget *)));
+	connect(&signal_map, &QSignalMapper::mappedObject,
+		this, [this](QObject *obj){ invertMainWindowVisibility(qobject_cast<QWidget *>(obj)); });
 	qApp->setQuitOnLastWindowClosed(false);
 	connect(qApp, &QApplication::lastWindowClosed,
 		this, &QETApp::checkRemainingWindows);
@@ -204,14 +204,7 @@ void QETApp::setLanguage(const QString &desired_language) {
 	QString languages_path = languagesPath();
 
 	// load Qt library translations
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)	// ### Qt 6: remove
-	QString qt_l10n_path = QLibraryInfo::location(QLibraryInfo::TranslationsPath);
-#else
-#if TODO_LIST
-#pragma message("@TODO remove code for QT 6 or later")
-#endif
 	QString qt_l10n_path = QLibraryInfo::path(QLibraryInfo::TranslationsPath);
-#endif
 	if (!qtTranslator.load("qt_" + desired_language, qt_l10n_path))
 	{
 		qWarning() << "failed to load"
@@ -1316,9 +1309,8 @@ QFont QETApp::diagramTextsFont(qreal size)
 							  "Liberation Sans").toString();
 	qreal diagram_texts_size     = settings.value("diagramitemsize",
 							  9.0).toDouble();
-	auto diagram_texts_item_weight =
-			static_cast<QFont::Weight>(
-				settings.value("diagramitemweight", QFont::Normal).toInt());
+	const int dtw_ = settings.value("diagramitemweight", int(QFont::Normal)).toInt();
+	auto diagram_texts_item_weight = static_cast<QFont::Weight>(dtw_ < 1 ? int(QFont::Thin) : dtw_);
 	QString diagram_texts_item_style  = settings.value("diagramitemstyle",
 							   "Regular").toString();
 
@@ -1350,9 +1342,8 @@ QFont QETApp::diagramTextsItemFont(qreal size)
 							   "Liberation Sans").toString();
 	qreal diagram_texts_item_size     = settings.value("diagramitemsize",
 							   9.0).toDouble();
-	auto diagram_texts_item_weight =
-			static_cast<QFont::Weight>(
-				settings.value("diagramitemweight", QFont::Normal).toInt());
+	const int ditw_ = settings.value("diagramitemweight", int(QFont::Normal)).toInt();
+	auto diagram_texts_item_weight = static_cast<QFont::Weight>(ditw_ < 1 ? int(QFont::Thin) : ditw_);
 	QString diagram_texts_item_style  = settings.value("diagramitemstyle",
 							   "Regular").toString();
 
@@ -1381,9 +1372,9 @@ QFont QETApp::diagramTextsItemFont(qreal size)
 	//Font to use
 	QFont font_ = diagramTextsItemFont();
 	if (settings.contains("diagrameditor/dynamic_text_font")) {
-		font_.fromString(settings.value(
+		font_.fromString(sanitizeFontString(settings.value(
 					 "diagrameditor/dynamic_text_font"
-						).toString());
+						).toString()));
 	}
 	if (size > 0) {
 		font_.setPointSizeF(size);
@@ -1405,14 +1396,28 @@ QFont QETApp::indiTextsItemFont(qreal size)
 	//Font to use
 	QFont font_ = diagramTextsItemFont();
 	if (settings.contains("diagrameditor/independent_text_font")) {
-		font_.fromString(settings.value(
+		font_.fromString(sanitizeFontString(settings.value(
 					 "diagrameditor/independent_text_font"
-					 ).toString());
+					 ).toString()));
 	}
 	if (size > 0) {
 		font_.setPointSizeF(size);
 	}
 	return(font_);
+}
+
+// Qt5 serialised QFont::Thin as weight 0, which Qt6 rejects (valid range 1–1000).
+// Replace weight < 1 in the comma-separated font string with Qt6's Thin (100)
+// before calling fromString() so the warning is suppressed at source.
+QString QETApp::sanitizeFontString(const QString &s)
+{
+	QStringList f = s.split(QLatin1Char(','));
+	if (f.size() >= 5) {
+		bool ok;
+		if (f.at(4).toInt(&ok) < 1 && ok)
+			f[4] = QString::number(int(QFont::Thin));
+	}
+	return f.join(QLatin1Char(','));
 }
 
 /**
@@ -2385,7 +2390,7 @@ template <class T> void QETApp::addWindowsListToMenu(
 		QAction *current_menu = menu -> addAction(window -> windowTitle());
 		current_menu -> setCheckable(true);
 		current_menu -> setChecked(window -> isVisible());
-		connect(current_menu, SIGNAL(triggered()), &signal_map, SLOT(map()));
+		connect(current_menu, &QAction::triggered, &signal_map, qOverload<>(&QSignalMapper::map));
 		signal_map.setMapping(current_menu, window);
 	}
 }

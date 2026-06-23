@@ -100,10 +100,9 @@ void AutoNumberingDockWidget::setProject(QETProject *project,
 			    this,SLOT(folioAutoNumChanged()));
 		disconnect (m_project,SIGNAL(folioAutoNumAdded()),
 			    this,SLOT(folioAutoNumChanged()));
-		disconnect (this,
-			    SIGNAL(folioAutoNumChanged(QString)),
-			    &m_project_view->currentDiagram()->diagram()->border_and_titleblock,
-			    SLOT (slot_setAutoPageNum(QString)));
+		disconnect(this, qOverload<QString>(&AutoNumberingDockWidget::folioAutoNumChanged),
+			   &m_project_view->currentDiagram()->diagram()->border_and_titleblock,
+			   &BorderTitleBlock::setAutoPageNum);
 		disconnect(m_project, SIGNAL(defaultTitleBlockPropertiesChanged()),
 			   this,SLOT(setActive()));
 	
@@ -137,10 +136,9 @@ void AutoNumberingDockWidget::setProject(QETProject *project,
 		 this,SLOT(folioAutoNumChanged()));
 	connect (m_project,SIGNAL(folioAutoNumAdded()),
 		 this,SLOT(folioAutoNumChanged()));
-	connect (this,
-		 SIGNAL(folioAutoNumChanged(QString)),
-		 &m_project_view->currentDiagram()->diagram()->border_and_titleblock,
-		 SLOT (slot_setAutoPageNum(QString)));
+	connect(this, qOverload<QString>(&AutoNumberingDockWidget::folioAutoNumChanged),
+		&m_project_view->currentDiagram()->diagram()->border_and_titleblock,
+		&BorderTitleBlock::setAutoPageNum);
 	connect(m_project, SIGNAL(defaultTitleBlockPropertiesChanged()),
 		this,SLOT(setActive()));
 

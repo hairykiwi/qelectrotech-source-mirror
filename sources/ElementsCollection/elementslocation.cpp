@@ -654,7 +654,7 @@ QDomElement ElementsLocation::xml() const
 	{
 		QFile file (m_file_system_path);
 		QDomDocument docu;
-		if (docu.setContent(&file))
+		if (file.open(QIODevice::ReadOnly) && docu.setContent(&file))
 			return docu.documentElement();
 	}
 	else
@@ -805,13 +805,13 @@ bool ElementsLocation::setXml(const QDomDocument &xml_document) const
 			QString			   path_ = collectionPath(false);
 			QRegularExpression rx("^(.*)/(.*\\.elmt)$");
 
-			if (rx.exactMatch(path_))
+			if (auto regex_match = rx.match(path_); regex_match.hasMatch())
 			{
 				return project()
 					->embeddedElementCollection()
 					->addElementDefinition(
-						rx.cap(1),
-						rx.cap(2),
+						regex_match.captured(1),
+						regex_match.captured(2),
 						xml_document.documentElement());
 			}
 			else
