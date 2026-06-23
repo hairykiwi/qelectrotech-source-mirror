@@ -328,6 +328,20 @@ QTreeWidgetItem *GenericPanel::getItemForDiagram(Diagram *diagram,
 }
 
 /**
+	@brief GenericPanel::itemForDiagram
+	Pure lookup: return the existing tree item for \a diagram, or nullptr if
+	none exists. Unlike getItemForDiagram(), this never creates a detached
+	item on a cache miss, so it is safe for callers that only want to find
+	(not create) an item.
+	@param diagram
+	@return the cached item for \a diagram, or nullptr
+*/
+QTreeWidgetItem *GenericPanel::itemForDiagram(Diagram *diagram) {
+	if (!diagram) return(nullptr);
+	return(diagrams_.value(diagram, nullptr));
+}
+
+/**
 	@brief GenericPanel::updateDiagramItem
 	@param diagram_qtwi
 	@param diagram
