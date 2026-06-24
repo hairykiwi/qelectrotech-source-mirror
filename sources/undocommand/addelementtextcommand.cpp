@@ -73,6 +73,10 @@ void AddElementTextCommand::redo()
 {
 	m_text->setParentItem(m_element);
 	m_element->addDynamicTextItem(m_text);
+		//Compensate the freshly-created text for the element's current mirror/flip
+		//so it draws correctly at once instead of geometrically reflected until the
+		//next transform. No-op when the element is neither mirrored nor flipped.
+	m_element->correctTextReadability(m_text);
 }
 
 

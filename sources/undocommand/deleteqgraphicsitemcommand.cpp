@@ -291,12 +291,27 @@ void DeleteQGraphicsItemCommand::undo()
 	for(DynamicElementTextItem *deti : m_removed_contents.m_element_texts)
 	{
 		if(m_elmt_text_hash.keys().contains(deti))
-			m_elmt_text_hash.value(deti)->addDynamicTextItem(deti);
+		{
+			Element *elmt = m_elmt_text_hash.value(deti);
+			elmt->addDynamicTextItem(deti);
+				//Compensate the restored text for the element's current
+				//mirror/flip so it reads correctly without a subsequent transform.
+			elmt->correctTextReadability(deti);
+		}
 		else if (m_grp_texts_hash.keys().contains(deti))
 		{
 			Element *elmt = m_grp_texts_hash.value(deti)->parentElement();
 			elmt->addDynamicTextItem(deti);
 			elmt->addTextToGroup(deti, m_grp_texts_hash.value(deti));
+				//No group-level correctTextReadability here, deliberately. The
+				//group is not deleted (only the text), so its mirror/flip
+				//compensation persists intact; a group-level correction was
+				//measured 2026-06-24 to be a no-op in this path (the two
+				//untouched grouped texts stayed pristine). The restored text's
+				//misposition is the pre-existing addToGroup local-position
+				//recompute under reflection (deferred, see CC-TASKS), which a
+				//group-level call cannot fix. Re-evaluate if/when addToGroup is
+				//fixed to recompute the local position correctly under reflection.
 		}
 	}
 

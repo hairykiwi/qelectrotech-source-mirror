@@ -1459,6 +1459,11 @@ bool Element::removeTextFromGroup(DynamicElementTextItem *text,
 		group->removeFromGroup(text);
 		emit textRemovedFromGroup(text, group);
 		addDynamicTextItem(text);
+			//Post-attach: compensate the now-ungrouped text for the element's
+			//current mirror/flip so it reads correctly immediately, instead of
+			//drawing geometrically reflected until the next transform. No-op when
+			//the element is neither mirrored nor flipped.
+		correctTextReadability(text);
 		return true;
 	}
 
